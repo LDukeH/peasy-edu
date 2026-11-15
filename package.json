@@ -1,0 +1,22 @@
+{
+  "name": "peasy-edu",
+  "private": true,
+  "workspaces": [
+    "be",
+    "fe"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev:be": "npm run start:dev --workspace=be",
+    "dev:fe": "npm run dev --workspace=fe",
+    "openapi:export": "npm run openapi:export --workspace=be",
+    "gen:api": "npm run gen:api --workspace=fe",
+    "contract:sync": "npm run openapi:export && npm run gen:api",
+    "db:migrate": "npm run prisma:migrate --workspace=be",
+    "db:generate": "npm run prisma:generate --workspace=be",
+    "db:seed": "npm run prisma:seed --workspace=be",
+    "test:be": "npm run test --workspace=be",
+    "build:all": "npm run build --workspace=be && npm run build --workspace=fe",
+    "db:deploy": "npm run prisma:deploy --workspace=be"
+  }
+}

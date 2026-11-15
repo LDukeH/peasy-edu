@@ -1,0 +1,37 @@
+{
+  "name": "fe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "gen:api": "orval --config ./orval.config.ts"
+  },
+  "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.22",
+    "@fullcalendar/react": "^7.1.5",
+    "@fullcalendar/timegrid": "^6.1.22",
+    "@tanstack/react-query": "^5.107.1",
+    "axios": "^1.21.1",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "recharts": "^3.10.1",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "msw": "^3.0.6",
+    "orval": "^8.48.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5"
+  }
+}

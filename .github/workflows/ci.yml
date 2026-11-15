@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Verify OpenAPI Contract is up-to-date
+        run: |
+          npm run openapi:export
+          git diff --exit-code openapi.json || (echo "❌ Bạn quên chạy 'npm run openapi:export' trước khi commit DTO!" && exit 1)
+
+      - name: Generate FE API Client & Mocks
+        run: npm run gen:api
+
+      - name: Run BE Unit Tests
+        run: npm run test:be
+
+      - name: Build BE & FE
+        run: npm run build:all
