@@ -22,6 +22,978 @@
           "System"
         ]
       }
+    },
+    "/api/auth/login": {
+      "post": {
+        "description": "Đúng tên đăng nhập và mật khẩu → đặt cookie `access_token` + `refresh_token`, trả thông tin tài khoản (cùng hình dạng với GET /auth/me).",
+        "operationId": "auth_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sai tên đăng nhập hoặc mật khẩu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tài khoản đã bị khóa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Thử đăng nhập quá nhiều lần, vui lòng chờ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Đăng nhập",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "description": "Tạo tài khoản vai trò PHU_HUYNH, tenDangNhap = soDienThoai; đăng nhập luôn (đặt cookie như /auth/login).",
+        "operationId": "auth_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Số điện thoại đã được đăng ký",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Đăng ký quá nhiều lần, vui lòng chờ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Phụ huynh tự đăng ký tài khoản",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "description": "Không có body. Đọc cookie `refresh_token`, đặt lại cả hai cookie. FE gọi tự động khi gặp 401.",
+        "operationId": "auth_refresh",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Đã cấp lại token"
+          },
+          "401": {
+            "description": "Thiếu, sai hoặc hết hạn refresh token; tài khoản bị khóa → FE chuyển về /login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cấp lại access token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "description": "Xóa cookie `access_token` + `refresh_token`. Không yêu cầu access token còn hạn, luôn trả 204.",
+        "operationId": "auth_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Đã đăng xuất"
+          }
+        },
+        "summary": "Đăng xuất",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "auth_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Thông tin tài khoản đang đăng nhập",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "operationId": "users_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Trang, bắt đầu từ 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Số bản ghi mỗi trang",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên đăng nhập, họ tên, email hoặc số điện thoại",
+            "schema": {
+              "maxLength": 100,
+              "example": "an",
+              "type": "string"
+            }
+          },
+          {
+            "name": "vaiTro",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/VaiTro"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrangThaiTaiKhoan"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tham số lọc không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Danh sách tài khoản (phân trang, tìm kiếm, lọc)",
+        "tags": [
+          "Users"
+        ]
+      },
+      "post": {
+        "description": "Mật khẩu được băm bằng bcrypt trước khi lưu.",
+        "operationId": "users_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tên đăng nhập đã tồn tại",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Tạo tài khoản",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "operationId": "users_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Chi tiết một tài khoản",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "description": "Đổi họ tên, liên hệ, vai trò, trạng thái; gửi matKhau để đặt lại mật khẩu. Không đổi được tenDangNhap.",
+        "operationId": "users_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Sửa tài khoản",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "description": "Chuyển trangThai = BI_KHOA, không xóa bản ghi vì còn liên kết nhật ký và dữ liệu nghiệp vụ. Không tự khóa tài khoản đang đăng nhập.",
+        "operationId": "users_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Đã khóa tài khoản"
+          },
+          "400": {
+            "description": "Không thể tự khóa tài khoản của mình",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Khóa tài khoản (xóa mềm)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/subjects": {
+      "get": {
+        "operationId": "subjects_findAll",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã hoặc tên môn",
+            "schema": {
+              "maxLength": 100,
+              "example": "toán",
+              "type": "string"
+            }
+          },
+          {
+            "name": "nhomMon",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/NhomMon"
+            }
+          },
+          {
+            "name": "capHoc",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ lấy môn áp dụng cho cấp học này",
+            "schema": {
+              "$ref": "#/components/schemas/CapHoc"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrangThaiMonHoc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubjectDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tham số lọc không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Danh sách môn học (công khai, có lọc)",
+        "tags": [
+          "Subjects"
+        ]
+      },
+      "post": {
+        "description": "Hệ thống tự sinh mã MHxx. Chỉ QUAN_LY.",
+        "operationId": "subjects_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ (vd. TIEU_HOC với nhóm không phải năng khiếu – kỹ năng)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tên môn đã tồn tại",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Thêm môn học",
+        "tags": [
+          "Subjects"
+        ]
+      }
+    },
+    "/api/subjects/{id}": {
+      "get": {
+        "operationId": "subjects_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy môn học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Chi tiết môn học (công khai)",
+        "tags": [
+          "Subjects"
+        ]
+      },
+      "patch": {
+        "description": "Đổi tên, nhóm, cấp học, mô tả hoặc trangThai (ngừng sử dụng). Chỉ QUAN_LY.",
+        "operationId": "subjects_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy môn học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tên môn đã tồn tại",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Sửa môn học",
+        "tags": [
+          "Subjects"
+        ]
+      },
+      "delete": {
+        "description": "Chỉ xóa được môn chưa gắn lớp/yêu cầu/môn dạy của gia sư; ngược lại trả 409 và FE gợi ý chuyển NGUNG_SU_DUNG. Chỉ QUAN_LY.",
+        "operationId": "subjects_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Đã xóa môn học"
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Không phải vai trò QUAN_LY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy môn học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Môn đã được sử dụng, chỉ có thể ngừng sử dụng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Xóa môn học",
+        "tags": [
+          "Subjects"
+        ]
+      }
     }
   },
   "info": {
@@ -52,6 +1024,481 @@
         "required": [
           "status"
         ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "tenDangNhap": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "Tên đăng nhập; phụ huynh dùng số điện thoại",
+            "example": "0901234567"
+          },
+          "matKhau": {
+            "type": "string",
+            "maxLength": 72,
+            "example": "MatKhau@123"
+          }
+        },
+        "required": [
+          "tenDangNhap",
+          "matKhau"
+        ]
+      },
+      "VaiTro": {
+        "type": "string",
+        "enum": [
+          "QUAN_LY",
+          "DIEU_PHOI",
+          "GIA_SU",
+          "PHU_HUYNH"
+        ]
+      },
+      "TrangThaiTaiKhoan": {
+        "type": "string",
+        "enum": [
+          "HOAT_DONG",
+          "BI_KHOA"
+        ]
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Khóa kỹ thuật (không hiển thị cho người dùng)",
+            "example": 1
+          },
+          "tenDangNhap": {
+            "type": "string",
+            "description": "Tên đăng nhập, duy nhất. Phụ huynh dùng số điện thoại",
+            "example": "0901234567"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Văn An"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "an.nguyen@example.com"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true,
+            "example": "0901234567"
+          },
+          "vaiTro": {
+            "example": "PHU_HUYNH",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VaiTro"
+              }
+            ]
+          },
+          "trangThai": {
+            "example": "HOAT_DONG",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiTaiKhoan"
+              }
+            ]
+          },
+          "maDoiTuong": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mã nghiệp vụ của đối tượng liên kết (PHxxxxx, GSxxxxx, NVxxx); null nếu chưa liên kết",
+            "example": "PH00015"
+          },
+          "lanDangNhapCuoi": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "example": "2026-11-17T08:30:00.000Z"
+          },
+          "ngayTao": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-16T02:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "tenDangNhap",
+          "hoTen",
+          "email",
+          "soDienThoai",
+          "vaiTro",
+          "trangThai",
+          "maDoiTuong",
+          "lanDangNhapCuoi",
+          "ngayTao"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "description": "Thông báo lỗi; lỗi validate (400) trả về mảng, các lỗi khác trả về chuỗi",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": [
+              "soDienThoai phải gồm 10 chữ số, bắt đầu bằng 0"
+            ]
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "error"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Nguyễn Văn An"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "description": "Số điện thoại Việt Nam (10 chữ số, bắt đầu bằng 0), dùng làm tên đăng nhập",
+            "example": "0901234567"
+          },
+          "matKhau": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72,
+            "description": "Mật khẩu 8–72 ký tự (giới hạn của bcrypt)",
+            "example": "MatKhau@123"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "an.nguyen@example.com"
+          }
+        },
+        "required": [
+          "hoTen",
+          "soDienThoai",
+          "matKhau"
+        ]
+      },
+      "UserListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDto"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "Tổng số bản ghi khớp bộ lọc",
+            "example": 42
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "tenDangNhap": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z0-9._@-]+$",
+            "description": "Tên đăng nhập, duy nhất: chữ, số và . _ @ -",
+            "example": "dieuphoi01"
+          },
+          "matKhau": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72,
+            "description": "Mật khẩu ban đầu, 8–72 ký tự (giới hạn của bcrypt)",
+            "example": "MatKhau@123"
+          },
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Trần Thị Bình"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "binh.tran@example.com"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "description": "Số điện thoại Việt Nam: 10 chữ số, bắt đầu bằng 0",
+            "example": "0912345678"
+          },
+          "vaiTro": {
+            "example": "DIEU_PHOI",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VaiTro"
+              }
+            ]
+          }
+        },
+        "required": [
+          "tenDangNhap",
+          "matKhau",
+          "hoTen",
+          "vaiTro"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "matKhau": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72,
+            "description": "Mật khẩu ban đầu, 8–72 ký tự (giới hạn của bcrypt)",
+            "example": "MatKhau@123"
+          },
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Trần Thị Bình"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "binh.tran@example.com"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "description": "Số điện thoại Việt Nam: 10 chữ số, bắt đầu bằng 0",
+            "example": "0912345678"
+          },
+          "vaiTro": {
+            "example": "DIEU_PHOI",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VaiTro"
+              }
+            ]
+          },
+          "trangThai": {
+            "example": "BI_KHOA",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiTaiKhoan"
+              }
+            ]
+          }
+        }
+      },
+      "NhomMon": {
+        "type": "string",
+        "enum": [
+          "VAN_HOA",
+          "NGOAI_NGU",
+          "NANG_KHIEU_KY_NANG",
+          "LUYEN_THI"
+        ]
+      },
+      "CapHoc": {
+        "type": "string",
+        "enum": [
+          "TIEU_HOC",
+          "THCS",
+          "THPT",
+          "DAI_HOC",
+          "NGUOI_DI_LAM"
+        ]
+      },
+      "TrangThaiMonHoc": {
+        "type": "string",
+        "enum": [
+          "DANG_SU_DUNG",
+          "NGUNG_SU_DUNG"
+        ]
+      },
+      "SubjectDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Khóa kỹ thuật (không hiển thị cho người dùng)",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "description": "Mã môn do hệ thống sinh, dạng MHxx",
+            "example": "MH01"
+          },
+          "tenMon": {
+            "type": "string",
+            "example": "Toán"
+          },
+          "nhomMon": {
+            "example": "VAN_HOA",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NhomMon"
+              }
+            ]
+          },
+          "capHoc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapHoc"
+            },
+            "example": [
+              "THCS",
+              "THPT"
+            ]
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true,
+            "example": "Toán chương trình phổ thông 2018"
+          },
+          "trangThai": {
+            "example": "DANG_SU_DUNG",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiMonHoc"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "tenMon",
+          "nhomMon",
+          "capHoc",
+          "moTa",
+          "trangThai"
+        ]
+      },
+      "CreateSubjectDto": {
+        "type": "object",
+        "properties": {
+          "tenMon": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Tên môn, duy nhất",
+            "example": "Toán"
+          },
+          "nhomMon": {
+            "example": "VAN_HOA",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NhomMon"
+              }
+            ]
+          },
+          "capHoc": {
+            "minItems": 1,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapHoc"
+            },
+            "description": "Cấp học áp dụng, ít nhất 1. TIEU_HOC chỉ hợp lệ với nhóm NANG_KHIEU_KY_NANG (TT 29/2024)",
+            "example": [
+              "THCS",
+              "THPT"
+            ]
+          },
+          "moTa": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "Toán chương trình phổ thông 2018"
+          }
+        },
+        "required": [
+          "tenMon",
+          "nhomMon",
+          "capHoc"
+        ]
+      },
+      "UpdateSubjectDto": {
+        "type": "object",
+        "properties": {
+          "tenMon": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Tên môn, duy nhất",
+            "example": "Toán"
+          },
+          "nhomMon": {
+            "example": "VAN_HOA",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NhomMon"
+              }
+            ]
+          },
+          "capHoc": {
+            "minItems": 1,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapHoc"
+            },
+            "description": "Cấp học áp dụng, ít nhất 1. TIEU_HOC chỉ hợp lệ với nhóm NANG_KHIEU_KY_NANG (TT 29/2024)",
+            "example": [
+              "THCS",
+              "THPT"
+            ]
+          },
+          "moTa": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "Toán chương trình phổ thông 2018"
+          },
+          "trangThai": {
+            "description": "Ngừng sử dụng thay cho xóa khi môn đã có lớp",
+            "example": "NGUNG_SU_DUNG",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiMonHoc"
+              }
+            ]
+          }
+        }
       }
     }
   }
