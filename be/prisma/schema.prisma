@@ -15,7 +15,7 @@ model HealthCheck {
 
 enum TrangThaiTaiKhoan {
   HOAT_DONG
-  KHOA
+  BI_KHOA
 }
 
 enum HinhThucHoc {
@@ -170,6 +170,7 @@ model TaiKhoan {
   vaiTroId        Int
   trangThai       TrangThaiTaiKhoan @default(HOAT_DONG)
   lanDangNhapCuoi DateTime?         @db.Timestamptz(3)
+  ngayTao         DateTime          @default(now()) @db.Timestamptz(3)
 
   vaiTro        VaiTro          @relation(fields: [vaiTroId], references: [id], onDelete: Restrict)
   nhanVien      NhanVien?
