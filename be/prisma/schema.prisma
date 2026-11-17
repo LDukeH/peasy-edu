@@ -186,7 +186,7 @@ model NhanVien {
   ma          String            @unique
   hoTen       String
   soDienThoai String
-  email       String
+  email       String            @unique
   trangThai   TrangThaiTaiKhoan @default(HOAT_DONG)
   taiKhoanId  Int?              @unique
 
@@ -353,7 +353,7 @@ model HoSoNangLuc {
 model MonHoc {
   id           Int        @id @default(autoincrement())
   ma           String     @unique
-  ten          String
+  ten          String     @unique
   nhom         NhomMonHoc
   capHocApDung String[]
   moTa         String?

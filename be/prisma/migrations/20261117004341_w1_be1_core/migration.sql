@@ -3,7 +3,7 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- CreateEnum
-CREATE TYPE "TrangThaiTaiKhoan" AS ENUM ('HOAT_DONG', 'KHOA');
+CREATE TYPE "TrangThaiTaiKhoan" AS ENUM ('HOAT_DONG', 'BI_KHOA');
 
 -- CreateEnum
 CREATE TYPE "HinhThucHoc" AS ENUM ('TAI_NHA', 'ONLINE');
@@ -86,6 +86,9 @@ CREATE TABLE "TaiKhoan" (
     "vaiTroId" INTEGER NOT NULL,
     "trangThai" "TrangThaiTaiKhoan" NOT NULL DEFAULT 'HOAT_DONG',
     "lanDangNhapCuoi" TIMESTAMPTZ(3),
+
+    -- Them ngay tao cho dong nhat
+    "ngayTao" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "TaiKhoan_pkey" PRIMARY KEY ("id")
 );
@@ -554,6 +557,7 @@ CREATE INDEX "TaiKhoan_vaiTroId_idx" ON "TaiKhoan"("vaiTroId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NhanVien_ma_key" ON "NhanVien"("ma");
+CREATE UNIQUE INDEX "NhanVien_email_key" ON "NhanVien"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NhanVien_taiKhoanId_key" ON "NhanVien"("taiKhoanId");
@@ -620,6 +624,7 @@ CREATE INDEX "HoSoNangLuc_nguoiXacMinhId_idx" ON "HoSoNangLuc"("nguoiXacMinhId")
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MonHoc_ma_key" ON "MonHoc"("ma");
+CREATE UNIQUE INDEX "MonHoc_ten_key" ON "MonHoc"("ten");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MonDay_ma_key" ON "MonDay"("ma");
