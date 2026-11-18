@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
@@ -25,17 +24,20 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import type { AuthUser } from '../../common/auth/auth-user.js';
+import { CurrentUser, Roles } from '../../common/auth/auth.decorators.js';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto.js';
+import { VaiTro } from '../../common/enums/tai-khoan.enum.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ListUsersQueryDto } from './dto/list-users-query.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UserListResponseDto } from './dto/user-list-response.dto.js';
 import { UserDto } from './dto/user.dto.js';
-
-const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W1-BE2';
+import { UsersService } from './users.service.js';
 
 /** Bảng 9: "Tài khoản, phân quyền, danh mục" – chỉ QUAN_LY. */
 @ApiTags('Users')
+@Roles(VaiTro.QUAN_LY)
 @ApiCookieAuth()
 @ApiUnauthorizedResponse({
   type: ErrorResponseDto,
@@ -47,6 +49,8 @@ const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W1-BE2';
 })
 @Controller('users')
 export class UsersController {
+  constructor(private readonly users: UsersService) {}
+
   @Get()
   @ApiOperation({ summary: 'Danh sách tài khoản (phân trang, tìm kiếm, lọc)' })
   @ApiOkResponse({ type: UserListResponseDto })
@@ -54,8 +58,8 @@ export class UsersController {
     type: ErrorResponseDto,
     description: 'Tham số lọc không hợp lệ',
   })
-  findAll(@Query() _query: ListUsersQueryDto): UserListResponseDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findAll(@Query() query: ListUsersQueryDto): Promise<UserListResponseDto> {
+    return this.users.findAll(query);
   }
 
   @Get(':id')
@@ -65,8 +69,8 @@ export class UsersController {
     type: ErrorResponseDto,
     description: 'Không tìm thấy tài khoản',
   })
-  findOne(@Param('id', ParseIntPipe) _id: number): UserDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
+    return this.users.findOne(id);
   }
 
   @Post()
@@ -83,8 +87,8 @@ export class UsersController {
     type: ErrorResponseDto,
     description: 'Tên đăng nhập đã tồn tại',
   })
-  create(@Body() _dto: CreateUserDto): UserDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  create(@Body() dto: CreateUserDto): Promise<UserDto> {
+    return this.users.create(dto);
   }
 
   @Patch(':id')
@@ -103,10 +107,11 @@ export class UsersController {
     description: 'Không tìm thấy tài khoản',
   })
   update(
-    @Param('id', ParseIntPipe) _id: number,
-    @Body() _dto: UpdateUserDto,
-  ): UserDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<UserDto> {
+    return this.users.update(id, dto, user.id);
   }
 
   @Delete(':id')
@@ -125,7 +130,10 @@ export class UsersController {
     type: ErrorResponseDto,
     description: 'Không tìm thấy tài khoản',
   })
-  remove(@Param('id', ParseIntPipe) _id: number): void {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ): Promise<void> {
+    return this.users.remove(id, user.id);
   }
 }

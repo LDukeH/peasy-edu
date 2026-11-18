@@ -4,8 +4,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotImplementedException,
   Post,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -20,12 +22,24 @@ import {
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import type { Request, Response } from 'express';
+import type { AuthUser } from '../../common/auth/auth-user.js';
+import { CurrentUser, Public } from '../../common/auth/auth.decorators.js';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto.js';
 import { UserDto } from '../users/dto/user.dto.js';
+import { UsersService } from '../users/users.service.js';
+import { AuthThrottlerGuard } from './auth-throttler.guard.js';
+import {
+  LOGIN_LIMIT_PER_MINUTE,
+  REFRESH_COOKIE,
+  REGISTER_LIMIT_PER_MINUTE,
+  THROTTLE_TTL_MS,
+} from './auth.constants.js';
+import { clearAuthCookies, setAuthCookies } from './auth.cookies.js';
+import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
-
-const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W1-BE2';
 
 /**
  * Token chỉ đi qua cookie httpOnly (SameSite=Lax): `access_token` và `refresh_token`.
@@ -34,7 +48,17 @@ const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W1-BE2';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
+  constructor(
+    private readonly auth: AuthService,
+    private readonly users: UsersService,
+  ) {}
+
   @Post('login')
+  @Public()
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle({
+    default: { limit: LOGIN_LIMIT_PER_MINUTE, ttl: THROTTLE_TTL_MS },
+  })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Đăng nhập',
@@ -58,11 +82,21 @@ export class AuthController {
     type: ErrorResponseDto,
     description: 'Thử đăng nhập quá nhiều lần, vui lòng chờ',
   })
-  login(@Body() _dto: LoginDto): UserDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UserDto> {
+    const { user, tokens } = await this.auth.login(dto);
+    setAuthCookies(res, tokens);
+    return user;
   }
 
   @Post('register')
+  @Public()
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle({
+    default: { limit: REGISTER_LIMIT_PER_MINUTE, ttl: THROTTLE_TTL_MS },
+  })
   @ApiOperation({
     summary: 'Phụ huynh tự đăng ký tài khoản',
     description:
@@ -81,11 +115,17 @@ export class AuthController {
     type: ErrorResponseDto,
     description: 'Đăng ký quá nhiều lần, vui lòng chờ',
   })
-  register(@Body() _dto: RegisterDto): UserDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UserDto> {
+    const { user, tokens } = await this.auth.register(dto);
+    setAuthCookies(res, tokens);
+    return user;
   }
 
   @Post('refresh')
+  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Cấp lại access token',
@@ -98,11 +138,16 @@ export class AuthController {
     description:
       'Thiếu, sai hoặc hết hạn refresh token; tài khoản bị khóa → FE chuyển về /login',
   })
-  refresh(): void {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const cookies = req.cookies as Record<string, unknown> | undefined;
+    setAuthCookies(res, await this.auth.refresh(cookies?.[REFRESH_COOKIE]));
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Đăng xuất',
@@ -110,8 +155,8 @@ export class AuthController {
       'Xóa cookie `access_token` + `refresh_token`. Không yêu cầu access token còn hạn, luôn trả 204.',
   })
   @ApiNoContentResponse({ description: 'Đã đăng xuất' })
-  logout(): void {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  logout(@Res({ passthrough: true }) res: Response): void {
+    clearAuthCookies(res);
   }
 
   @Get('me')
@@ -122,7 +167,7 @@ export class AuthController {
     type: ErrorResponseDto,
     description: 'Chưa đăng nhập hoặc access token hết hạn',
   })
-  me(): UserDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  me(@CurrentUser() user: AuthUser): Promise<UserDto> {
+    return this.users.findOne(user.id);
   }
 }
