@@ -10,6 +10,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
+
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (frontendUrl) {
+    app.enableCors({ origin: frontendUrl, credentials: true });
+  }
+
   app.use(helmet());
   app.use(cookieParser());
   app.useGlobalPipes(
