@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
@@ -25,13 +24,14 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Public, Roles } from '../../common/auth/auth.decorators.js';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto.js';
+import { VaiTro } from '../../common/enums/tai-khoan.enum.js';
 import { CreateSubjectDto } from './dto/create-subject.dto.js';
 import { ListSubjectsQueryDto } from './dto/list-subjects-query.dto.js';
 import { SubjectDto } from './dto/subject.dto.js';
 import { UpdateSubjectDto } from './dto/update-subject.dto.js';
-
-const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W1-BE2';
+import { SubjectsService } from './subjects.service.js';
 
 /**
  * Danh mục môn học. Đọc: công khai (khách cần để gửi yêu cầu tìm gia sư).
@@ -40,29 +40,34 @@ const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W1-BE2';
 @ApiTags('Subjects')
 @Controller('subjects')
 export class SubjectsController {
+  constructor(private readonly subjects: SubjectsService) {}
+
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Danh sách môn học (công khai, có lọc)' })
   @ApiOkResponse({ type: [SubjectDto] })
   @ApiBadRequestResponse({
     type: ErrorResponseDto,
     description: 'Tham số lọc không hợp lệ',
   })
-  findAll(@Query() _query: ListSubjectsQueryDto): SubjectDto[] {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findAll(@Query() query: ListSubjectsQueryDto): Promise<SubjectDto[]> {
+    return this.subjects.findAll(query);
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Chi tiết môn học (công khai)' })
   @ApiOkResponse({ type: SubjectDto })
   @ApiNotFoundResponse({
     type: ErrorResponseDto,
     description: 'Không tìm thấy môn học',
   })
-  findOne(@Param('id', ParseIntPipe) _id: number): SubjectDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<SubjectDto> {
+    return this.subjects.findOne(id);
   }
 
   @Post()
+  @Roles(VaiTro.QUAN_LY)
   @ApiCookieAuth()
   @ApiOperation({
     summary: 'Thêm môn học',
@@ -86,11 +91,12 @@ export class SubjectsController {
     type: ErrorResponseDto,
     description: 'Tên môn đã tồn tại',
   })
-  create(@Body() _dto: CreateSubjectDto): SubjectDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  create(@Body() dto: CreateSubjectDto): Promise<SubjectDto> {
+    return this.subjects.create(dto);
   }
 
   @Patch(':id')
+  @Roles(VaiTro.QUAN_LY)
   @ApiCookieAuth()
   @ApiOperation({
     summary: 'Sửa môn học',
@@ -119,13 +125,14 @@ export class SubjectsController {
     description: 'Tên môn đã tồn tại',
   })
   update(
-    @Param('id', ParseIntPipe) _id: number,
-    @Body() _dto: UpdateSubjectDto,
-  ): SubjectDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateSubjectDto,
+  ): Promise<SubjectDto> {
+    return this.subjects.update(id, dto);
   }
 
   @Delete(':id')
+  @Roles(VaiTro.QUAN_LY)
   @ApiCookieAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
@@ -150,7 +157,7 @@ export class SubjectsController {
     type: ErrorResponseDto,
     description: 'Môn đã được sử dụng, chỉ có thể ngừng sử dụng',
   })
-  remove(@Param('id', ParseIntPipe) _id: number): void {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.subjects.remove(id);
   }
 }

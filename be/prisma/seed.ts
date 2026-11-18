@@ -1,6 +1,128 @@
 import { PrismaClient, type Prisma } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+try {
+  process.loadEnvFile('.env');
+} catch {
+  // Staging/Production đặt biến môi trường trực tiếp, không có file .env.
+}
 
 const prisma = new PrismaClient();
+
+const vaiTroMacDinh: Prisma.VaiTroCreateManyInput[] = [
+  {
+    ma: 'QUAN_LY',
+    ten: 'Quản lý',
+    moTa: 'Gộp Chủ trung tâm, Quản trị viên và Kế toán trong MVP.',
+  },
+  {
+    ma: 'DIEU_PHOI',
+    ten: 'Nhân viên điều phối',
+    moTa: 'Tiếp nhận yêu cầu, ghép gia sư, xếp lớp và theo dõi buổi học.',
+  },
+  { ma: 'GIA_SU', ten: 'Gia sư', moTa: 'Gia sư đã có tài khoản.' },
+  {
+    ma: 'PHU_HUYNH',
+    ten: 'Phụ huynh',
+    moTa: 'Phụ huynh; học viên dùng chung nhóm giao diện này trong MVP.',
+  },
+];
+
+// Các môn được nêu trong Báo cáo Lần 1, Mục 4.2.6.
+const monHocMacDinh: Prisma.MonHocCreateManyInput[] = [
+  {
+    ma: 'MH01',
+    ten: 'Toán',
+    nhom: 'VAN_HOA',
+    capHocApDung: ['THCS', 'THPT'],
+  },
+  {
+    ma: 'MH02',
+    ten: 'Ngữ văn',
+    nhom: 'VAN_HOA',
+    capHocApDung: ['THCS', 'THPT'],
+  },
+  {
+    ma: 'MH03',
+    ten: 'Tiếng Anh',
+    nhom: 'NGOAI_NGU',
+    capHocApDung: ['THCS', 'THPT', 'DAI_HOC', 'NGUOI_DI_LAM'],
+  },
+  {
+    ma: 'MH04',
+    ten: 'IELTS',
+    nhom: 'LUYEN_THI',
+    capHocApDung: ['THPT', 'DAI_HOC', 'NGUOI_DI_LAM'],
+  },
+  {
+    ma: 'MH05',
+    ten: 'Piano',
+    nhom: 'NANG_KHIEU_KY_NANG',
+    capHocApDung: ['TIEU_HOC', 'THCS', 'THPT', 'DAI_HOC', 'NGUOI_DI_LAM'],
+  },
+];
+
+/** Mật khẩu lấy từ biến môi trường để repo không chứa tài khoản đăng nhập được. */
+async function seedTaiKhoanMau() {
+  const matKhau = process.env.SEED_MAT_KHAU_MAU;
+  if (!matKhau) {
+    console.log('Bỏ qua tài khoản mẫu vì chưa đặt SEED_MAT_KHAU_MAU.');
+    return;
+  }
+  const matKhauHash = await bcrypt.hash(matKhau, 12);
+
+  await prisma.taiKhoan.upsert({
+    where: { tenDangNhap: 'quanly01' },
+    update: {},
+    create: {
+      tenDangNhap: 'quanly01',
+      matKhauHash,
+      vaiTro: { connect: { ma: 'QUAN_LY' } },
+      nhanVien: {
+        create: {
+          ma: 'NV001',
+          hoTen: 'Quản lý Mẫu',
+          soDienThoai: '0900000001',
+          email: 'quanly01@peasy.test',
+        },
+      },
+    },
+  });
+  await prisma.taiKhoan.upsert({
+    where: { tenDangNhap: 'dieuphoi01' },
+    update: {},
+    create: {
+      tenDangNhap: 'dieuphoi01',
+      matKhauHash,
+      vaiTro: { connect: { ma: 'DIEU_PHOI' } },
+      nhanVien: {
+        create: {
+          ma: 'NV002',
+          hoTen: 'Điều phối Mẫu',
+          soDienThoai: '0900000002',
+          email: 'dieuphoi01@peasy.test',
+        },
+      },
+    },
+  });
+  await prisma.taiKhoan.upsert({
+    where: { tenDangNhap: '0900000003' },
+    update: {},
+    create: {
+      tenDangNhap: '0900000003',
+      matKhauHash,
+      vaiTro: { connect: { ma: 'PHU_HUYNH' } },
+      phuHuynh: {
+        create: {
+          ma: 'PH00001',
+          hoTen: 'Phụ huynh Mẫu',
+          soDienThoai: '0900000003',
+        },
+      },
+    },
+  });
+  console.log('Đã kiểm tra 3 tài khoản mẫu.');
+}
 
 const thamSoMacDinh: Prisma.ThamSoNghiepVuCreateManyInput[] = [
   {
@@ -182,7 +304,20 @@ async function main() {
     skipDuplicates: true,
   });
   console.log(`Đã thêm ${count} tham số nghiệp vụ còn thiếu.`);
-  // Vai trò, tài khoản mẫu và mã môn học chờ danh sách được nhóm duyệt.
+
+  const vaiTro = await prisma.vaiTro.createMany({
+    data: vaiTroMacDinh,
+    skipDuplicates: true,
+  });
+  console.log(`Đã thêm ${vaiTro.count} vai trò còn thiếu.`);
+
+  const monHoc = await prisma.monHoc.createMany({
+    data: monHocMacDinh,
+    skipDuplicates: true,
+  });
+  console.log(`Đã thêm ${monHoc.count} môn học còn thiếu.`);
+
+  await seedTaiKhoanMau();
 }
 
 main()
