@@ -104,6 +104,13 @@ export class UsersService {
       });
       return toUserDto(capNhat);
     } catch (error) {
+      // PATCH chỉ đổi tenDangNhap khi đồng bộ theo SĐT mới của phụ huynh.
+      if (
+        maLoiPrisma(error) === 'P2002' &&
+        truongBiTrung(error).includes('tenDangNhap')
+      ) {
+        throw new ConflictException('Số điện thoại đã được sử dụng');
+      }
       throw this.chuyenLoiTrung(error);
     }
   }
@@ -262,6 +269,9 @@ export class UsersService {
       }),
       ...(dto.trangThai && { trangThai: dto.trangThai }),
       ...(doiVaiTro && { vaiTro: { connect: { ma: dto.vaiTro } } }),
+      // Phụ huynh đăng nhập bằng SĐT (Mục 4.2.1); Prisma ghi cả hai bảng trong một transaction.
+      ...(loaiHoSo === 'phuHuynh' &&
+        dto.soDienThoai !== undefined && { tenDangNhap: dto.soDienThoai }),
       ...(loaiHoSo &&
         Object.keys(capNhatHoSo).length > 0 && {
           [loaiHoSo]: { update: capNhatHoSo },

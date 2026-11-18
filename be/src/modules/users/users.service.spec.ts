@@ -156,6 +156,47 @@ describe('UsersService', () => {
       );
     });
 
+    it('đổi SĐT phụ huynh thì đổi luôn tên đăng nhập trong cùng một lệnh ghi', async () => {
+      prisma.taiKhoan.findUnique.mockResolvedValue(phuHuynh);
+      prisma.taiKhoan.update.mockResolvedValue(phuHuynh);
+
+      await service.update(3, { soDienThoai: '0909999999' }, 1);
+
+      expect(prisma.taiKhoan.update).toHaveBeenCalledOnce();
+      expect(prisma.taiKhoan.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            tenDangNhap: '0909999999',
+            phuHuynh: { update: { soDienThoai: '0909999999' } },
+          },
+        }),
+      );
+    });
+
+    it('đổi SĐT nhân viên thì giữ nguyên tên đăng nhập', async () => {
+      prisma.taiKhoan.findUnique.mockResolvedValue(nhanVien);
+      prisma.taiKhoan.update.mockResolvedValue(nhanVien);
+
+      await service.update(2, { soDienThoai: '0909999999' }, 1);
+
+      expect(prisma.taiKhoan.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { nhanVien: { update: { soDienThoai: '0909999999' } } },
+        }),
+      );
+    });
+
+    it('SĐT mới trùng tên đăng nhập của tài khoản khác → 409', async () => {
+      prisma.taiKhoan.findUnique.mockResolvedValue(phuHuynh);
+      prisma.taiKhoan.update.mockRejectedValue(
+        loiPrisma('P2002', ['tenDangNhap']),
+      );
+
+      await expect(
+        service.update(3, { soDienThoai: '0909999999' }, 1),
+      ).rejects.toThrow(new ConflictException('Số điện thoại đã được sử dụng'));
+    });
+
     it('khóa nhân viên thì đồng bộ trạng thái bảng NhanVien', async () => {
       prisma.taiKhoan.findUnique.mockResolvedValue(nhanVien);
       prisma.taiKhoan.update.mockResolvedValue(nhanVien);
