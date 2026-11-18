@@ -490,7 +490,7 @@
         ]
       },
       "patch": {
-        "description": "Đổi họ tên, liên hệ, vai trò, trạng thái; gửi matKhau để đặt lại mật khẩu. Không đổi được tenDangNhap.",
+        "description": "Đổi họ tên, liên hệ, vai trò, trạng thái; gửi matKhau để đặt lại mật khẩu. Không gửi trực tiếp tenDangNhap; với phụ huynh, đổi soDienThoai sẽ đổi luôn tenDangNhap.",
         "operationId": "users_update",
         "parameters": [
           {
@@ -555,6 +555,16 @@
           },
           "404": {
             "description": "Không tìm thấy tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email hoặc số điện thoại đã được sử dụng",
             "content": {
               "application/json": {
                 "schema": {

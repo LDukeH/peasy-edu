@@ -91,12 +91,16 @@ export class UsersController {
   @ApiOperation({
     summary: 'Sửa tài khoản',
     description:
-      'Đổi họ tên, liên hệ, vai trò, trạng thái; gửi matKhau để đặt lại mật khẩu. Không đổi được tenDangNhap.',
+      'Đổi họ tên, liên hệ, vai trò, trạng thái; gửi matKhau để đặt lại mật khẩu. Không gửi trực tiếp tenDangNhap; với phụ huynh, đổi soDienThoai sẽ đổi luôn tenDangNhap.',
   })
   @ApiOkResponse({ type: UserDto })
   @ApiBadRequestResponse({
     type: ErrorResponseDto,
     description: 'Dữ liệu không hợp lệ',
+  })
+  @ApiConflictResponse({
+    type: ErrorResponseDto,
+    description: 'Email hoặc số điện thoại đã được sử dụng',
   })
   @ApiNotFoundResponse({
     type: ErrorResponseDto,
