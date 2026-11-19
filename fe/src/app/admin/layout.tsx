@@ -38,7 +38,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <span className="font-brand font-bold text-logo-light">Edu</span>
               {"  /  Quản trị truy cập"}
             </p>
-            <p>Một trung tâm · Phạm vi nội bộ</p>
           </header>
           <main className="flex flex-col gap-6 p-8">{children}</main>
         </div>

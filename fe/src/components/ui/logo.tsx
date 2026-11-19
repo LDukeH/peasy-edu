@@ -1,19 +1,26 @@
-import Image from "next/image";
+const IMAGE_WIDTH = "100%"; // độ rộng logo trong khung trắng
+const PADDING_LEFT = 10;    // khoảng trắng bên trái (px) - giảm để logo sát trái hơn
+const PADDING_RIGHT = 40;   // khoảng trắng bên phải (px)
+const PADDING_Y = 10;       // khoảng trắng trên/dưới (px)
+const OFFSET_X = 0;         // dịch ảnh thêm: số âm = sang trái, số dương = sang phải
 
-/**
- * Logo PeasyEdu (mascot + chữ + tagline) dùng ảnh thật tại public/brand/logo.png.
- * Kích thước gốc 400×116.
- */
-export function Logo({ className = "" }: { className?: string }) {
+export function Logo({
+  className = "",
+  imageWidth = IMAGE_WIDTH,
+}: {
+  className?: string;
+  imageWidth?: string;
+}) {
   return (
-    <div className={`flex items-center rounded-xl bg-white px-3 py-2 ${className}`}>
-      <Image
+    <div
+      className={`flex items-center justify-start rounded-2xl bg-white ${className}`}
+      style={{ padding: `${PADDING_Y}px ${PADDING_RIGHT}px ${PADDING_Y}px ${PADDING_LEFT}px` }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/brand/bean_logo.png"
         alt="PeasyEdu – Cùng con tiến bộ"
-        width={400}
-        height={116}
-        priority
-        className="h-auto w-full"
+        style={{ width: imageWidth, height: "auto", marginLeft: OFFSET_X }}
       />
     </div>
   );
