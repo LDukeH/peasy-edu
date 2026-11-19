@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fredoka, Inter } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/providers/app-providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "vietnamese"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
+  weight: ["700"],
 });
 
 export const metadata: Metadata = {
-  title: "PeasyEdu — CÙNG CON TIẾN BỘ | Hệ thống Quản lý Trung tâm Gia sư",
-  description:
-    "Mô hình môi giới gia sư một cơ sở có quản lý, theo dõi buổi học và minh bạch tài chính (SE100.R12)",
+  title: "PeasyEdu",
+  description: "PeasyEdu · Cùng con tiến bộ",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
         <AppProviders>{children}</AppProviders>
