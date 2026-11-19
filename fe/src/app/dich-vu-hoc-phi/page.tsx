@@ -1,361 +1,254 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import {
-  ShieldCheck,
-  AlertCircle,
-  Clock,
-  FileCheck,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PublicNavbar } from "@/components/layout/public-navbar";
 import { PublicFooter } from "@/components/layout/public-footer";
-import { DataTable, ColumnDef } from "@/components/common/data-table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatVND } from "@/lib/utils";
-
-interface PriceItem {
-  id: string;
-  capHoc: string;
-  nhomMon: string;
-  trinhDoGiaSu: "Sinh viên" | "Giáo viên";
-  hinhThuc: "Tại nhà" | "Trực tuyến";
-  thoiLuong: string;
-  giaToiThieu: number;
-  giaToiDa: number;
-  ghiChu?: string;
-}
-
-const MOCK_PRICE_DATA: PriceItem[] = [
-  {
-    id: "KG01",
-    capHoc: "Tiểu học (Lớp 1–5)",
-    nhomMon: "Năng khiếu & Kỹ năng sống",
-    trinhDoGiaSu: "Sinh viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "90 phút",
-    giaToiThieu: 120000,
-    giaToiDa: 150000,
-    ghiChu: "Tuân thủ TT 29/2024: chỉ dạy năng khiếu",
-  },
-  {
-    id: "KG02",
-    capHoc: "Tiểu học (Lớp 1–5)",
-    nhomMon: "Năng khiếu (Piano/Vẽ/Cờ vua)",
-    trinhDoGiaSu: "Giáo viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "90 phút",
-    giaToiThieu: 180000,
-    giaToiDa: 240000,
-  },
-  {
-    id: "KG03",
-    capHoc: "THCS (Lớp 6–8)",
-    nhomMon: "Toán, Văn, Tiếng Anh, Lý",
-    trinhDoGiaSu: "Sinh viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "120 phút",
-    giaToiThieu: 130000,
-    giaToiDa: 160000,
-  },
-  {
-    id: "KG04",
-    capHoc: "THCS (Lớp 6–8)",
-    nhomMon: "Toán, Văn, Tiếng Anh, Lý",
-    trinhDoGiaSu: "Giáo viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "120 phút",
-    giaToiThieu: 190000,
-    giaToiDa: 250000,
-  },
-  {
-    id: "KG05",
-    capHoc: "Lớp 9 (Luyện thi vào 10)",
-    nhomMon: "Toán, Văn, Tiếng Anh Chuyên",
-    trinhDoGiaSu: "Sinh viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "120 phút",
-    giaToiThieu: 150000,
-    giaToiDa: 180000,
-    ghiChu: "Sinh viên trường Sư phạm / ĐHQG giỏi",
-  },
-  {
-    id: "KG06",
-    capHoc: "Lớp 9 (Luyện thi vào 10)",
-    nhomMon: "Toán, Văn, Tiếng Anh Chuyên",
-    trinhDoGiaSu: "Giáo viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "120 phút",
-    giaToiThieu: 220000,
-    giaToiDa: 300000,
-    ghiChu: "Giáo viên nhiều năm kinh nghiệm",
-  },
-  {
-    id: "KG07",
-    capHoc: "THPT (Lớp 10–12)",
-    nhomMon: "Toán, Lý, Hóa, Sinh, Văn",
-    trinhDoGiaSu: "Sinh viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "120 phút",
-    giaToiThieu: 140000,
-    giaToiDa: 170000,
-  },
-  {
-    id: "KG08",
-    capHoc: "THPT (Lớp 10–12)",
-    nhomMon: "Toán, Lý, Hóa, Sinh, Văn",
-    trinhDoGiaSu: "Giáo viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "120 phút",
-    giaToiThieu: 200000,
-    giaToiDa: 280000,
-  },
-  {
-    id: "KG09",
-    capHoc: "Luyện thi ĐGNL & Tốt nghiệp",
-    nhomMon: "Tổ hợp KHTN / KHXH",
-    trinhDoGiaSu: "Giáo viên",
-    hinhThuc: "Trực tuyến",
-    thoiLuong: "90 phút",
-    giaToiThieu: 180000,
-    giaToiDa: 230000,
-    ghiChu: "Học qua Google Meet / Zoom",
-  },
-  {
-    id: "KG10",
-    capHoc: "Ngoại ngữ & Chứng chỉ",
-    nhomMon: "IELTS / TOEIC / Giao tiếp",
-    trinhDoGiaSu: "Giáo viên",
-    hinhThuc: "Tại nhà",
-    thoiLuong: "90 phút",
-    giaToiThieu: 250000,
-    giaToiDa: 350000,
-    ghiChu: "Cam kết đầu ra theo mục tiêu",
-  },
-];
 
 export default function DichVuHocPhiPage() {
-  const [filterCapHoc, setFilterCapHoc] = useState<string>("Tất cả");
-  const [filterTrinhDo, setFilterTrinhDo] = useState<string>("Tất cả");
-
-  const filteredData = useMemo(() => {
-    return MOCK_PRICE_DATA.filter((item) => {
-      const matchCap =
-        filterCapHoc === "Tất cả" || item.capHoc.includes(filterCapHoc);
-      const matchTrinhDo =
-        filterTrinhDo === "Tất cả" || item.trinhDoGiaSu === filterTrinhDo;
-      return matchCap && matchTrinhDo;
-    });
-  }, [filterCapHoc, filterTrinhDo]);
-
-  // Cấu hình các cột cho DataTable dùng chung
-  const columns: ColumnDef<PriceItem>[] = [
-    {
-      header: "Cấp học & Môn",
-      cell: (row) => (
-        <div>
-          <p className="font-semibold text-foreground text-sm">{row.capHoc}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{row.nhomMon}</p>
-        </div>
-      ),
-    },
-    {
-      header: "Trình độ gia sư",
-      cell: (row) => (
-        <Badge
-          variant={row.trinhDoGiaSu === "Giáo viên" ? "default" : "secondary"}
-          className="text-xs"
-        >
-          {row.trinhDoGiaSu}
-        </Badge>
-      ),
-    },
-    {
-      header: "Hình thức & Thời lượng",
-      cell: (row) => (
-        <div className="text-xs text-foreground">
-          <span className="font-medium">{row.hinhThuc}</span>
-          <span className="text-muted-foreground"> · {row.thoiLuong}</span>
-        </div>
-      ),
-    },
-    {
-      header: "Khung học phí / buổi",
-      headerClassName: "text-right",
-      className: "text-right",
-      cell: (row) => (
-        <div className="text-right">
-          <span className="font-bold text-primary text-sm">
-            {formatVND(row.giaToiThieu)} – {formatVND(row.giaToiDa)}
-          </span>
-          {row.ghiChu && (
-            <p className="text-[11px] text-muted-foreground mt-0.5">{row.ghiChu}</p>
-          )}
-        </div>
-      ),
-    },
-  ];
+  const [grade, setGrade] = useState("THCS · Lớp 8");
+  const [subject, setSubject] = useState("Toán");
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-white text-[#33465c]">
+      {/* 1. Header / Navbar */}
       <PublicNavbar />
 
-      <main className="flex-1">
-        {/* BANNER HEADER */}
-        <section className="bg-gradient-to-r from-[#10213a] to-[#116f7c] py-14 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
-            <Badge variant="accent" className="bg-white/15 text-white border-white/20">
-              Công khai theo Thông tư 29/2024/TT-BGDĐT
-            </Badge>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-              Dịch vụ đào tạo & Bảng khung giá học phí
+      <main className="flex-1 py-12 px-4 sm:px-8 lg:px-20">
+        <div className="mx-auto max-w-7xl space-y-12">
+          {/* 2. Tiêu đề trang (Khớp 100% Ảnh 3) */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+              PeasyEdu
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#172b4d] tracking-tight">
+              Một lộ trình phù hợp, một mức phí rõ ràng
             </h1>
-            <p className="max-w-2xl text-sm sm:text-base text-white/80 leading-relaxed">
-              Bảng giá niêm yết công khai tham khảo theo từng cấp học, môn học và trình độ gia sư.
-              Học phí được tính theo buổi học thực tế diễn ra và thanh toán trả sau định kỳ hằng tháng.
+            <p className="text-sm text-[#52677d]">
+              Gia sư 1:1 tại nhà (TP.HCM) hoặc trực tuyến · Theo chương trình phổ thông và nhu cầu riêng của con.
             </p>
           </div>
-        </section>
 
-        {/* SECTION: BẢNG KHUNG GIÁ (DÙNG DATATABLE) */}
-        <section id="bang-gia" className="py-12 sm:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                  Bảng tra cứu khung học phí tham khảo
-                </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Đơn giá cụ thể được thỏa thuận trong khung và ghi nhận cố định vào thỏa thuận dịch vụ
-                </p>
-              </div>
-
-              {/* BỘ LỌC DỮ LIỆU */}
-              <div className="flex items-center gap-3">
-                <select
-                  value={filterCapHoc}
-                  onChange={(e) => setFilterCapHoc(e.target.value)}
-                  className="h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="Tất cả">Tất cả cấp học</option>
-                  <option value="Tiểu học">Tiểu học (Năng khiếu)</option>
-                  <option value="THCS">THCS (Lớp 6–9)</option>
-                  <option value="THPT">THPT (Lớp 10–12)</option>
-                  <option value="Luyện thi">Luyện thi tốt nghiệp</option>
-                  <option value="Ngoại ngữ">Ngoại ngữ / IELTS</option>
-                </select>
-
-                <select
-                  value={filterTrinhDo}
-                  onChange={(e) => setFilterTrinhDo(e.target.value)}
-                  className="h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="Tất cả">Mọi trình độ gia sư</option>
-                  <option value="Sinh viên">Sinh viên</option>
-                  <option value="Giáo viên">Giáo viên / Cử nhân</option>
-                </select>
+          {/* 3. 3 thẻ khung học phí theo cấp học (Khớp 100% Ảnh 3) */}
+          <div id="bang-gia" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Tiểu học */}
+            <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between hover:shadow-xs transition-shadow">
+              <div className="space-y-3">
+                <h2 className="text-base font-semibold text-[#172b4d]">Tiểu học · Lớp 1–5</h2>
+                <p className="text-2xl font-bold text-[#116f7c]">180.000–250.000 ₫</p>
+                <div className="text-xs text-[#52677d] space-y-2 leading-relaxed">
+                  <p>/ buổi 90 phút · Năng khiếu và kỹ năng: Piano, Vẽ, Cờ vua, Kỹ năng sống</p>
+                  <p className="italic">
+                    Theo TT 29/2024/TT-BGDĐT, học viên tiểu học chỉ học môn năng khiếu và kỹ năng.
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* BẢNG DATATABLE CHÍNH */}
-            <DataTable
-              columns={columns}
-              data={filteredData}
-              emptyTitle="Không tìm thấy khung giá phù hợp"
-              emptyDescription="Vui lòng thử điều chỉnh lại bộ lọc cấp học hoặc trình độ gia sư."
-              pageSize={10}
-            />
-          </div>
-        </section>
+            {/* THCS */}
+            <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between hover:shadow-xs transition-shadow">
+              <div className="space-y-3">
+                <h2 className="text-base font-semibold text-[#172b4d]">THCS · Lớp 6–9</h2>
+                <p className="text-2xl font-bold text-[#116f7c]">220.000–320.000 ₫</p>
+                <div className="text-xs text-[#52677d] space-y-2 leading-relaxed">
+                  <p>/ buổi 90 phút · Toán, Văn, Anh, KHTN</p>
+                  <p>
+                    Củng cố kiến thức, bám sát chương trình và luyện phương pháp. Hỗ trợ ôn chuyển cấp theo mục tiêu.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-        {/* SECTION: 4 NGUYÊN TẮC HỌC PHÍ MINH BẠCH (MỤC 6.7 SE100) */}
-        <section className="bg-muted/40 py-12 sm:py-16 border-t border-border">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-10">
-              <h3 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                4 chính sách thanh toán bảo vệ quyền lợi gia đình
-              </h3>
-              <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground">
-                Được chuẩn hóa thành quy tắc trong hợp đồng và tự động tính toán trên hệ thống
+            {/* THPT */}
+            <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between hover:shadow-xs transition-shadow">
+              <div className="space-y-3">
+                <h2 className="text-base font-semibold text-[#172b4d]">THPT · Lớp 10–12</h2>
+                <p className="text-2xl font-bold text-[#116f7c]">280.000–400.000 ₫</p>
+                <div className="text-xs text-[#52677d] space-y-2 leading-relaxed">
+                  <p>/ buổi 90 phút · Toán, Lý, Hóa, Văn, Anh</p>
+                  <p>
+                    Hệ thống kiến thức, luyện bài tập theo năng lực và chuẩn bị cho các kỳ kiểm tra quan trọng.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Khối "Mọi lộ trình đều bao gồm" (Bảng cam kết - Khớp 100% Ảnh 3) */}
+          <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4 shadow-2xs">
+            <h2 className="text-base font-semibold text-[#172b4d]">
+              Mọi lộ trình đều bao gồm
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-[#f5f8fa] text-[#52677d] border-b border-[#dce4eb]">
+                    <th className="py-3 px-4 font-semibold w-1/3">Nội dung</th>
+                    <th className="py-3 px-4 font-semibold">Gia đình nhận được</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#dce4eb] text-[#33465c]">
+                  <tr>
+                    <td className="py-3 px-4 font-semibold">Gia sư đã xác minh</td>
+                    <td className="py-3 px-4 text-[#52677d]">
+                      Văn bằng và kinh nghiệm được đối chiếu trước khi đề xuất
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-semibold">Kế hoạch học cá nhân</td>
+                    <td className="py-3 px-4 text-[#52677d]">
+                      Thống nhất nền tảng, mục tiêu và cách theo dõi tiến bộ
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-semibold">Báo cáo buổi học</td>
+                    <td className="py-3 px-4 text-[#52677d]">
+                      Nội dung, nhận xét, bài tập và học liệu trong cổng gia đình
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-semibold">Điều phối hỗ trợ</td>
+                    <td className="py-3 px-4 text-[#52677d]">
+                      Theo dõi lịch, xác nhận buổi học và tiếp nhận phản hồi
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 5. Khối 2 cột: Đơn giá phụ thuộc gì & Form chọn nhu cầu (Khớp 100% Ảnh 3) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {/* Cột trái: Đơn giá phụ thuộc điều gì? */}
+            <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4">
+              <h2 className="text-base font-semibold text-[#172b4d]">
+                Đơn giá phụ thuộc điều gì?
+              </h2>
+              <p className="text-xs text-[#52677d] leading-relaxed">
+                Môn và khối lớp, mục tiêu học, kinh nghiệm gia sư, thời lượng và khu vực di chuyển. Trung tâm báo đơn giá cụ thể trước khi gia đình chọn học thử.
+              </p>
+
+              <div className="bg-[#f5f8fa] border border-[#dce4eb] rounded-lg p-3.5 space-y-1 text-xs">
+                <p className="font-semibold text-[#33465c]">Ví dụ: Toán 8 · 2 buổi / tuần</p>
+                <p className="text-[#116f7c] font-bold">8 buổi × 250.000 ₫ = 2.000.000 ₫ / tháng</p>
+              </div>
+
+              <p className="text-xs text-[#52677d] leading-relaxed">
+                Chỉ tính buổi đã xác nhận: có mặt 100% · vắng có phép 0% · vắng không phép 50%. Không tự động thu tiền.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <div className="h-10 w-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center mb-2">
-                    <FileCheck className="h-5 w-5" />
-                  </div>
-                  <CardTitle className="text-base">Học thử 1 buổi miễn phí</CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground leading-relaxed">
-                  Nếu sau buổi học thử đầu tiên gia đình thấy chưa phù hợp, buổi học sẽ được <strong>miễn phí 100%</strong> và trung tâm sẽ đề xuất gia sư khác.
-                </CardContent>
-              </Card>
+            {/* Cột phải: Chọn nhu cầu của gia đình */}
+            <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4">
+              <h2 className="text-base font-semibold text-[#172b4d]">
+                Chọn nhu cầu của gia đình
+              </h2>
 
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center mb-2">
-                    <Clock className="h-5 w-5" />
-                  </div>
-                  <CardTitle className="text-base">Thanh toán trả sau</CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground leading-relaxed">
-                  <strong>Không thu tiền cọc trước</strong>. Ngày 3 hằng tháng trung tâm gửi phiếu học phí tổng hợp số buổi đã học của tháng trước, hạn thanh toán ngày 10.
-                </CardContent>
-              </Card>
+              <div className="space-y-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#52677d]">Khối lớp</label>
+                  <select
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    className="w-full h-10 px-3 border border-[#dce4eb] rounded-lg text-xs text-[#33465c] bg-white focus:outline-none focus:border-[#116f7c]"
+                  >
+                    <option value="Tiểu học · Lớp 1–5">Tiểu học · Lớp 1–5</option>
+                    <option value="THCS · Lớp 6">THCS · Lớp 6</option>
+                    <option value="THCS · Lớp 7">THCS · Lớp 7</option>
+                    <option value="THCS · Lớp 8">THCS · Lớp 8</option>
+                    <option value="THCS · Lớp 9">THCS · Lớp 9</option>
+                    <option value="THPT · Lớp 10">THPT · Lớp 10</option>
+                    <option value="THPT · Lớp 11">THPT · Lớp 11</option>
+                    <option value="THPT · Lớp 12">THPT · Lớp 12</option>
+                  </select>
+                </div>
 
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <div className="h-10 w-10 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center mb-2">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <CardTitle className="text-base">Xác nhận buổi học 2 chiều</CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground leading-relaxed">
-                  Sau mỗi buổi dạy, gia sư cập nhật nội dung và điểm danh. Phụ huynh có 48 giờ để xác nhận hoặc phản đối trước khi đưa vào phiếu học phí.
-                </CardContent>
-              </Card>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#52677d]">Môn học</label>
+                  <select
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="w-full h-10 px-3 border border-[#dce4eb] rounded-lg text-xs text-[#33465c] bg-white focus:outline-none focus:border-[#116f7c]"
+                  >
+                    <option value="Toán">Toán</option>
+                    <option value="Ngữ văn">Ngữ văn</option>
+                    <option value="Tiếng Anh">Tiếng Anh</option>
+                    <option value="Vật lý">Vật lý</option>
+                    <option value="Hóa học">Hóa học</option>
+                    <option value="Khoa học tự nhiên">Khoa học tự nhiên</option>
+                    <option value="Năng khiếu (Piano/Vẽ)">Năng khiếu (Piano/Vẽ)</option>
+                  </select>
+                </div>
 
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <div className="h-10 w-10 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center mb-2">
-                    <AlertCircle className="h-5 w-5" />
-                  </div>
-                  <CardTitle className="text-base">Quy định báo nghỉ rõ ràng</CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground leading-relaxed">
-                  Học viên báo nghỉ trước $\ge 12$ giờ: miễn phí 0%. Báo muộn $&lt; 12$ giờ: tính 50% học phí buổi đó để hỗ trợ chi phí đi lại của gia sư.
-                </CardContent>
-              </Card>
+                <Link href="/login" className="block pt-1">
+                  <Button className="w-full h-10 bg-[#116f7c] hover:bg-[#0e5c66] text-white font-semibold rounded-lg text-xs">
+                    Nhận đề xuất gia sư phù hợp
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </section>
 
-        {/* BOTTOM CTA */}
-        <section className="py-12 bg-card border-t border-border text-center">
-          <div className="mx-auto max-w-3xl px-4 space-y-4">
-            <h3 className="text-xl font-bold text-foreground sm:text-2xl">
-              Sẵn sàng tìm một người đồng hành học tập cho con?
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Hãy để lại nhu cầu học tập, nhân viên tư vấn sẽ phân tích hồ sơ và gửi bạn danh sách gia sư phù hợp nhất.
-            </p>
-            <div className="pt-2">
-              <Link href="/">
-                <Button size="lg" className="gap-2 font-bold shadow-md">
-                  <span>Trở về trang chủ</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+          {/* 6. Khối "Câu hỏi thường gặp" (Khớp 100% Ảnh 3) */}
+          <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4">
+            <h2 className="text-base font-semibold text-[#172b4d]">
+              Câu hỏi thường gặp
+            </h2>
+
+            <div className="space-y-3 divide-y divide-[#dce4eb]">
+              <div className="pt-2 first:pt-0 space-y-1">
+                <p className="text-xs font-semibold text-[#33465c]">
+                  Học thử có tính phí không?
+                </p>
+                <p className="text-xs text-[#52677d]">
+                  Mức phí được báo và thống nhất trước; ví dụ Toán 8 là 250.000 ₫ / 90 phút.
+                </p>
+              </div>
+
+              <div className="pt-3 space-y-1">
+                <p className="text-xs font-semibold text-[#33465c]">
+                  Có thể đổi lịch không?
+                </p>
+                <p className="text-xs text-[#52677d]">
+                  Gia đình đề nghị với trung tâm, gia sư và phụ huynh cùng xác nhận lịch mới.
+                </p>
+              </div>
+
+              <div className="pt-3 space-y-1">
+                <p className="text-xs font-semibold text-[#33465c]">
+                  Có phí phát sinh không?
+                </p>
+                <p className="text-xs text-[#52677d]">
+                  Mọi điều chỉnh phải được báo rõ và gia đình đồng ý trước khi áp dụng.
+                </p>
+              </div>
             </div>
           </div>
-        </section>
+
+          {/* 7. Banner "Chưa chắc con cần lộ trình nào?" (Khớp 100% Ảnh 3) */}
+          <div className="bg-[#ddf2f4] border border-[#dce4eb] rounded-xl p-8 space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-[#172b4d]">
+                Chưa chắc con cần lộ trình nào?
+              </h2>
+              <p className="text-sm text-[#52677d]">
+                Điều phối viên sẽ trao đổi về mục tiêu, lịch rảnh và ngân sách để đề xuất tối đa 3 gia sư phù hợp.
+              </p>
+            </div>
+
+            <Link href="/login" className="inline-block pt-1">
+              <Button className="h-10 px-5 bg-[#116f7c] hover:bg-[#0e5c66] text-white font-semibold rounded-lg text-xs shadow-xs">
+                <span>Tư vấn nhu cầu học tập</span>
+                <ArrowRight className="h-4 w-4 ml-1.5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
       </main>
 
+      {/* 8. Footer */}
       <PublicFooter />
     </div>
   );

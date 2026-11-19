@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { ROLE_LABELS, UserRole } from "@/types/auth";
+import { LogoPeasyEdu } from "@/components/common/logo";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -257,17 +258,9 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-[#10213a] text-white flex flex-col h-screen border-r border-white/10 shrink-0 select-none">
       {/* Brand Header */}
-      <div className="p-5 border-b border-white/10 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-lg bg-[#116f7c] flex items-center justify-center text-white font-bold text-lg shadow-md">
-            P
-          </div>
-          <div>
-            <h2 className="font-extrabold text-base tracking-tight text-white leading-tight">
-              Peasy Edu
-            </h2>
-            <p className="text-[11px] text-[#9cb3c9]">Hệ thống Gia sư SE100</p>
-          </div>
+      <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <Link href="/" className="hover:opacity-95 transition-opacity">
+          <LogoPeasyEdu variant="dark" size="sm" />
         </Link>
       </div>
 

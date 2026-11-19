@@ -18,7 +18,7 @@ export function DashboardHeader() {
           {ROLE_LABELS[role]}
         </Badge>
         <span className="text-xs text-muted-foreground hidden sm:inline">
-          Hệ thống Quản lý Trung tâm Gia sư Peasy Edu (SE100.R12)
+          Hệ thống Quản lý Trung tâm Gia sư PeasyEdu (SE100.R12)
         </span>
       </div>
 

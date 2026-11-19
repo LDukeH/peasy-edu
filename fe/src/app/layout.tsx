@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Peasy Edu — Hệ thống Quản lý Trung tâm Gia sư",
+  title: "PeasyEdu — CÙNG CON TIẾN BỘ | Hệ thống Quản lý Trung tâm Gia sư",
   description:
     "Mô hình môi giới gia sư một cơ sở có quản lý, theo dõi buổi học và minh bạch tài chính (SE100.R12)",
 };

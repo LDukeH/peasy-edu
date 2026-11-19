@@ -1,25 +1,21 @@
 import React from "react";
 import Link from "next/link";
-import { GraduationCap, ShieldCheck, Phone, Mail, MapPin } from "lucide-react";
+import { ShieldCheck, Phone, Mail, MapPin } from "lucide-react";
+import { LogoPeasyEdu } from "@/components/common/logo";
 
 export function PublicFooter() {
   return (
     <footer className="border-t border-border bg-[#10213a] text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          {/* Column 1: Info */}
+          {/* Column 1: Brand Info */}
           <div className="space-y-4 md:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white font-bold text-lg">
-                <GraduationCap className="h-6 w-6" />
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white">
-                Peasy<span className="text-[#77c5cf]">Edu</span>
-              </span>
-            </div>
-            <p className="max-w-md text-sm text-[#9cb3c9] leading-relaxed">
-              Hệ thống quản lý trung tâm gia sư một cơ sở theo mô hình môi giới có quản lý.
-              Kết nối gia sư chất lượng cao dạy tại nhà hoặc trực tuyến, cam kết minh bạch học phí và chất lượng từng buổi học.
+            <Link href="/" className="inline-block hover:opacity-95 transition-opacity">
+              <LogoPeasyEdu variant="dark" size="md" />
+            </Link>
+            <p className="max-w-md text-sm text-[#c5d0da] leading-relaxed">
+              Gia sư phù hợp. Lộ trình rõ ràng. Đồng hành mỗi ngày.
+              Mô hình môi giới gia sư có quản lý một cơ sở, cam kết minh bạch học phí và chất lượng từng buổi học.
             </p>
             <div className="flex items-center gap-2 text-xs text-[#77c5cf]">
               <ShieldCheck className="h-4 w-4 shrink-0" />
@@ -27,9 +23,9 @@ export function PublicFooter() {
             </div>
           </div>
 
-          {/* Column 2: Dịch vụ */}
+          {/* Column 2: Dịch vụ đào tạo */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#77c5cf] mb-3">
               Dịch vụ đào tạo
             </h4>
             <ul className="space-y-2 text-sm text-[#c5d4e2]">
@@ -50,41 +46,43 @@ export function PublicFooter() {
               </li>
               <li>
                 <Link href="/dich-vu-hoc-phi" className="hover:text-white transition-colors">
-                  Luyện thi lớp 10 & THPT QG
-                </Link>
-              </li>
-              <li>
-                <Link href="/dich-vu-hoc-phi" className="hover:text-white transition-colors">
-                  Ngoại ngữ & Năng khiếu
+                  Tiểu học, THCS & THPT
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: Liên hệ */}
+          {/* Column 3: Liên hệ trung tâm */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-3">
-              Thông tin liên hệ
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#77c5cf] mb-3">
+              Liên hệ trung tâm
             </h4>
             <ul className="space-y-2.5 text-sm text-[#c5d4e2]">
               <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-[#77c5cf] shrink-0" />
-                <span>TP. Hồ Chí Minh</span>
-              </li>
-              <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-[#77c5cf] shrink-0" />
-                <span>Hotline: 0901 234 567</span>
+                <span>028 3822 0123 (08:00–20:00)</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-[#77c5cf] shrink-0" />
-                <span>hotro@giasu.edu.vn</span>
+                <span>hello@peasyedu.vn</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-[#77c5cf] shrink-0" />
+                <span>TP. Hồ Chí Minh</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs text-[#7b95ae]">
-          © 2026 Trung tâm Gia sư ABC — Đồ án SE100.R12. Mã ngành 8561 (Quyết định 36/2025/QĐ-TTg).
+        <div className="mt-10 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#7b95ae]">
+          <p>© 2026 PeasyEdu — Hệ thống quản lý trung tâm gia sư SE100.R12.</p>
+          <div className="flex gap-4">
+            <Link href="/dich-vu-hoc-phi" className="hover:text-white transition-colors">
+              Dịch vụ & học phí
+            </Link>
+            <span className="text-white/20">·</span>
+            <span className="text-[#9cb3c9]">Mã ngành 8561 (QĐ 36/2025/QĐ-TTg)</span>
+          </div>
         </div>
       </div>
     </footer>

@@ -1,305 +1,561 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  GraduationCap,
-  Users,
-  CalendarCheck,
-  Search,
-  Sparkles,
-  CheckCircle2,
+  ShieldCheck,
+  ListChecks,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
 import { PublicNavbar } from "@/components/layout/public-navbar";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function HomePage() {
-  const [selectedSubject, setSelectedSubject] = useState("Toán");
-  const [selectedGrade, setSelectedGrade] = useState("Lớp 10");
-  const [selectedMode, setSelectedMode] = useState("Tất cả hình thức");
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Navigation */}
+    <div className="min-h-screen flex flex-col bg-white text-[#33465c]">
+      {/* 1. Header / Navbar */}
       <PublicNavbar />
 
       <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-[#10213a]/5 via-background to-background py-16 sm:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto space-y-5">
-              <Badge variant="accent" className="px-3.5 py-1 text-xs gap-1.5 shadow-xs">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span>Mô hình môi giới gia sư có quản lý chuẩn SE100.R12</span>
-              </Badge>
+        {/* Điều hướng phiên bản: Xem trang chủ trên điện thoại */}
+        <div className="bg-[#f5f8fa] border-b border-[#dce4eb] px-4 sm:px-8 lg:px-20 py-2.5">
+          <button className="bg-white border border-[#dce4eb] px-4 py-2 rounded-lg text-xs font-semibold text-[#33465c] hover:bg-slate-50 transition-colors shadow-2xs">
+            Xem trang chủ trên điện thoại
+          </button>
+        </div>
 
-              <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl sm:leading-tight">
-                Tìm gia sư giỏi, minh bạch học phí{" "}
-                <span className="text-primary block sm:inline">theo từng buổi học</span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Trung tâm gia sư một cơ sở theo dõi chất lượng từng buổi dạy.
-                Cam kết hồ sơ gia sư đã xác minh, <strong>học thử 1 buổi miễn phí</strong> nếu không đạt,
-                thanh toán trả sau và không thu cọc.
+        {/* 2. HERO SECTION (Learning promise - Nền xanh ngọc nhạt #ddf2f4) */}
+        <section className="bg-[#ddf2f4] px-4 sm:px-8 lg:px-20 py-12 lg:py-16 border-b border-[#dce4eb]">
+          <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-12 lg:gap-16 items-center justify-between">
+            {/* Cột trái: Thông điệp Hero */}
+            <div className="flex-1 space-y-6 max-w-2xl">
+              <p className="text-xs font-semibold text-[#116f7c] tracking-wider uppercase flex items-center gap-1.5">
+                <span>●</span> GIA SƯ TẠI NHÀ, ONLINE & NHÓM · TP.HCM
               </p>
 
-              {/* QUICK SEARCH BOX */}
-              <div className="mt-8 rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-lg max-w-4xl mx-auto text-left">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 items-end">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground">Môn học</label>
-                    <select
-                      value={selectedSubject}
-                      onChange={(e) => setSelectedSubject(e.target.value)}
-                      className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="Toán">Toán học</option>
-                      <option value="Ngữ văn">Ngữ văn</option>
-                      <option value="Tiếng Anh">Tiếng Anh (IELTS/Giao tiếp)</option>
-                      <option value="Vật lý">Vật lý</option>
-                      <option value="Hóa học">Hóa học</option>
-                      <option value="Piano / Vẽ">Năng khiếu (Piano/Vẽ)</option>
-                    </select>
-                  </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-[48px] font-bold text-[#172b4d] tracking-tight leading-[1.2]">
+                <div>Đúng gia sư.</div>
+                <div>Vững nền tảng.</div>
+                <div>Tự tin tiến bộ.</div>
+              </h1>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground">Cấp học</label>
-                    <select
-                      value={selectedGrade}
-                      onChange={(e) => setSelectedGrade(e.target.value)}
-                      className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="Tiểu học">Tiểu học (Năng khiếu & Kỹ năng)</option>
-                      <option value="THCS (Lớp 6–9)">THCS (Lớp 6–9)</option>
-                      <option value="Lớp 10">Lớp 10 (Vào 10 / Chuyên)</option>
-                      <option value="THPT (Lớp 11–12)">THPT (Ôn thi tốt nghiệp & ĐGNL)</option>
-                    </select>
-                  </div>
+              <p className="text-base text-[#52677d] leading-relaxed">
+                Mỗi học viên có một cách học riêng. PeasyEdu giúp gia đình tìm gia sư phù hợp, theo sát từng buổi và nhìn rõ sự tiến bộ của con.
+              </p>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground">Hình thức dạy</label>
-                    <select
-                      value={selectedMode}
-                      onChange={(e) => setSelectedMode(e.target.value)}
-                      className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="Tất cả hình thức">Tất cả hình thức</option>
-                      <option value="Tại nhà học viên">Tại nhà (TP.HCM)</option>
-                      <option value="Trực tuyến">Trực tuyến (Meet / Zoom)</option>
-                    </select>
-                  </div>
+              {/* Action buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link href="/yeu-cau-tim-gia-su">
+                  <Button className="h-11 px-5 bg-[#116f7c] hover:bg-[#0e5c66] text-white font-semibold rounded-lg shadow-xs">
+                    <span>Tìm gia sư cho con</span>
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
+                  </Button>
+                </Link>
+                <Link href="/dich-vu-hoc-phi">
+                  <Button
+                    variant="outline"
+                    className="h-11 px-5 bg-white border-[#dce4eb] text-[#33465c] font-semibold hover:bg-slate-50 rounded-lg shadow-xs"
+                  >
+                    Khám phá dịch vụ
+                  </Button>
+                </Link>
+              </div>
 
-                  <Link href="/dich-vu-hoc-phi#bang-gia" className="w-full">
-                    <Button variant="default" className="w-full h-10 gap-2 font-semibold">
-                      <Search className="h-4 w-4" />
-                      <span>Xem khung giá</span>
-                    </Button>
-                  </Link>
+              <p className="text-xs text-[#52677d]">
+                Tư vấn nhu cầu rõ ràng · Gia đình chủ động lựa chọn
+              </p>
+            </div>
+
+            {/* Cột phải: Hình ảnh Gia sư & Học viên (hero-tutor.png) */}
+            <div className="w-full lg:w-[540px] shrink-0">
+              <div className="relative h-[340px] sm:h-[400px] w-full rounded-[20px] overflow-hidden shadow-sm border border-black/5 bg-slate-100">
+                <Image
+                  src="/brand/hero-tutor.png"
+                  alt="Gia sư PeasyEdu đồng hành cùng học viên tại nhà"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+
+              {/* Caption Card dưới ảnh */}
+              <div className="mt-3 bg-white border border-[#dce4eb] rounded-xl p-4 flex items-center gap-3 shadow-xs">
+                <div className="h-8 w-8 rounded-full bg-[#ddf2f4] flex items-center justify-center text-[#116f7c] shrink-0">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <p className="text-xs font-semibold text-[#33465c] leading-snug">
+                  Gia sư được xác minh bằng cấp,<br />
+                  lịch học được cả gia đình và gia sư thống nhất.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. TRUST PRINCIPLES (Dải cam kết minh bạch) */}
+        <section className="bg-white border-b border-[#dce4eb] px-4 sm:px-8 lg:px-20 py-8">
+          <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-center gap-3.5">
+              <div className="h-9 w-9 rounded-lg bg-[#ddf2f4] text-[#116f7c] flex items-center justify-center shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-[#52677d]">Đối chiếu bằng cấp và kinh nghiệm</p>
+                <p className="text-sm font-semibold text-[#33465c]">Hồ sơ đã xác minh</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="h-9 w-9 rounded-lg bg-[#ddf2f4] text-[#116f7c] flex items-center justify-center shrink-0">
+                <ListChecks className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-[#52677d]">Theo môn, lịch, khu vực và ngân sách</p>
+                <p className="text-sm font-semibold text-[#33465c]">Đề xuất có lý do</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="h-9 w-9 rounded-lg bg-[#ddf2f4] text-[#116f7c] flex items-center justify-center shrink-0">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-[#52677d]">Điểm danh, báo cáo và bài tập rõ ràng</p>
+                <p className="text-sm font-semibold text-[#33465c]">Theo sát mỗi buổi</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. SUBJECTS AND SERVICES ("HỌC ĐÚNG ĐIỀU CON CẦN") */}
+        <section className="px-4 sm:px-8 lg:px-20 py-14">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+                HỌC ĐÚNG ĐIỀU CON CẦN
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+                Từ củng cố nền tảng đến bứt phá mục tiêu
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Cấp 1 */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[#172b4d]">Tiểu học · Lớp 1–5</h3>
+                  <p className="text-sm text-[#33465c] leading-relaxed">
+                    Năng khiếu và kỹ năng: Piano, Vẽ, Cờ vua, Kỹ năng sống
+                  </p>
+                  <p className="text-xs text-[#52677d] leading-relaxed italic">
+                    Theo TT 29/2024/TT-BGDĐT, học viên tiểu học chỉ học môn năng khiếu và kỹ năng.
+                  </p>
+                </div>
+                <Link
+                  href="/dich-vu-hoc-phi"
+                  className="mt-6 text-sm font-semibold text-[#116f7c] hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Xem lộ trình & học phí</span>
+                  <span>→</span>
+                </Link>
+              </div>
+
+              {/* Cấp 2 */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[#172b4d]">THCS · Lớp 6–9</h3>
+                  <p className="text-sm text-[#33465c] leading-relaxed">
+                    Toán, Văn, Anh, Khoa học tự nhiên
+                  </p>
+                  <p className="text-xs text-[#52677d] leading-relaxed">
+                    Lấp lỗ hổng kiến thức, tự tin học trên lớp.
+                  </p>
+                </div>
+                <Link
+                  href="/dich-vu-hoc-phi"
+                  className="mt-6 text-sm font-semibold text-[#116f7c] hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Xem lộ trình & học phí</span>
+                  <span>→</span>
+                </Link>
+              </div>
+
+              {/* Cấp 3 */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[#172b4d]">THPT · Lớp 10–12</h3>
+                  <p className="text-sm text-[#33465c] leading-relaxed">
+                    Toán, Lý, Hóa, Văn, Anh
+                  </p>
+                  <p className="text-xs text-[#52677d] leading-relaxed">
+                    Hệ thống kiến thức, luyện tập theo mục tiêu.
+                  </p>
+                </div>
+                <Link
+                  href="/dich-vu-hoc-phi"
+                  className="mt-6 text-sm font-semibold text-[#116f7c] hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Xem lộ trình & học phí</span>
+                  <span>→</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. PROCESS STEPS ("4 BƯỚC, MỘT HÀNH TRÌNH RÕ RÀNG") */}
+        <section className="bg-[#eaf0f5] px-4 sm:px-8 lg:px-20 py-14 border-y border-[#dce4eb]">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+                4 BƯỚC, MỘT HÀNH TRÌNH RÕ RÀNG
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+                Gia đình luôn là người lựa chọn
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-5 space-y-2.5 shadow-2xs">
+                <p className="text-2xl font-bold text-[#116f7c]">01</p>
+                <h4 className="text-base font-semibold text-[#33465c]">Chia sẻ nhu cầu</h4>
+                <p className="text-sm text-[#52677d] leading-relaxed">
+                  Môn học, mục tiêu, lịch rảnh và ngân sách.
+                </p>
+              </div>
+
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-5 space-y-2.5 shadow-2xs">
+                <p className="text-2xl font-bold text-[#116f7c]">02</p>
+                <h4 className="text-base font-semibold text-[#33465c]">Nhận 3 đề xuất</h4>
+                <p className="text-sm text-[#52677d] leading-relaxed">
+                  Điều phối chọn tối đa 3 gia sư theo tiêu chí rõ ràng.
+                </p>
+              </div>
+
+              <div className="bg-white border border-[#116f7c]/30 rounded-xl p-5 space-y-2.5 shadow-xs">
+                <p className="text-2xl font-bold text-[#116f7c]">03</p>
+                <h4 className="text-base font-semibold text-[#33465c]">Chọn & học thử</h4>
+                <p className="text-sm text-[#52677d] leading-relaxed">
+                  Làm quen phương pháp trước khi quyết định học lâu dài.
+                </p>
+              </div>
+
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-5 space-y-2.5 shadow-2xs">
+                <p className="text-2xl font-bold text-[#116f7c]">04</p>
+                <h4 className="text-base font-semibold text-[#33465c]">Đồng hành mỗi buổi</h4>
+                <p className="text-sm text-[#52677d] leading-relaxed">
+                  Lịch định kỳ, báo cáo tiến bộ và học phí minh bạch.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. FEATURED TUTORS ("NGƯỜI ĐỒNG HÀNH TẬN TÂM" - Khớp 100% Ảnh 1) */}
+        <section id="doi-ngu-gia-su" className="px-4 sm:px-8 lg:px-20 py-14">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+                NGƯỜI ĐỒNG HÀNH TẬN TÂM
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+                Hiểu môn học. Hiểu cách con học.
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Tutor 1 */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow">
+                <p className="text-xs font-semibold text-[#116f7c]">✓ Bằng cấp đã xác minh</p>
+                <div>
+                  <h3 className="text-base font-bold text-[#172b4d]">Nguyễn Minh Anh</h3>
+                  <div className="text-xs text-[#52677d] mt-1 space-y-0.5">
+                    <p>Cử nhân Sư phạm Toán</p>
+                    <p>ĐH Sư phạm TP.HCM</p>
+                    <p>4 năm kinh nghiệm · Toán THCS</p>
+                  </div>
+                </div>
+                <p className="text-xl font-bold text-[#116f7c]">250.000 ₫ / 90 phút</p>
+                <div className="text-xs text-[#33465c] space-y-1">
+                  <p>Thứ 3, 5 · 18:30–20:00</p>
+                  <p className="text-[#80520b] font-medium">★ 4,9 / 5 · 32 đánh giá</p>
+                </div>
+                <Link href="/ho-so-gia-su" className="block pt-1">
+                  <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c] font-semibold hover:bg-slate-50">
+                    Xem hồ sơ
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Tutor 2 */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow">
+                <p className="text-xs font-semibold text-[#116f7c]">✓ Bằng cấp đã xác minh</p>
+                <div>
+                  <h3 className="text-base font-bold text-[#172b4d]">Trần Quốc Bảo</h3>
+                  <div className="text-xs text-[#52677d] mt-1 space-y-0.5">
+                    <p>Cử nhân Toán học</p>
+                    <p>ĐH Khoa học Tự nhiên</p>
+                    <p>5 năm kinh nghiệm · Toán THCS</p>
+                  </div>
+                </div>
+                <p className="text-xl font-bold text-[#116f7c]">280.000 ₫ / 90 phút</p>
+                <div className="text-xs text-[#33465c] space-y-1">
+                  <p>Thứ 3, 5 · 18:30–20:00</p>
+                  <p className="text-[#80520b] font-medium">★ 4,8 / 5 · 27 đánh giá</p>
+                </div>
+                <Link href="/ho-so-gia-su" className="block pt-1">
+                  <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c] font-semibold hover:bg-slate-50">
+                    Xem hồ sơ
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Tutor 3 */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow">
+                <p className="text-xs font-semibold text-[#116f7c]">✓ Bằng cấp đã xác minh</p>
+                <div>
+                  <h3 className="text-base font-bold text-[#172b4d]">Lê Thảo Vy</h3>
+                  <div className="text-xs text-[#52677d] mt-1 space-y-0.5">
+                    <p>Cử nhân Sư phạm Toán</p>
+                    <p>ĐH Sư phạm TP.HCM</p>
+                    <p>3 năm kinh nghiệm · Toán THCS</p>
+                  </div>
+                </div>
+                <p className="text-xl font-bold text-[#116f7c]">230.000 ₫ / 90 phút</p>
+                <div className="text-xs text-[#33465c] space-y-1">
+                  <p>Thứ 3, 5 · 18:30–20:00</p>
+                  <p className="text-[#80520b] font-medium">★ 4,8 / 5 · 19 đánh giá</p>
+                </div>
+                <Link href="/ho-so-gia-su" className="block pt-1">
+                  <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c] font-semibold hover:bg-slate-50">
+                    Xem hồ sơ
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <p className="text-xs text-[#52677d]">
+              Gia sư thực tế được đề xuất sau khi xác nhận nhu cầu.
+            </p>
+          </div>
+        </section>
+
+        {/* 7. LEARNING OUTCOMES ("● NHÌN THẤY SỰ TIẾN BỘ" - Khớp 100% Ảnh 1) */}
+        <section className="bg-[#ddf2f4] px-4 sm:px-8 lg:px-20 py-14 border-y border-[#dce4eb]">
+          <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-10 items-start justify-between">
+            {/* Cột trái: Thông điệp tiến bộ */}
+            <div className="flex-1 space-y-4 max-w-xl">
+              <p className="text-xs font-semibold text-[#116f7c] tracking-wider uppercase">
+                ● NHÌN THẤY SỰ TIẾN BỘ
+              </p>
+              <h2 className="text-3xl font-bold text-[#172b4d] leading-snug">
+                Không chỉ học thêm.<br />
+                Con học cách tự tin hơn.
+              </h2>
+              <p className="text-sm text-[#52677d] leading-relaxed">
+                Mục tiêu được thống nhất từ đầu. Gia đình biết con đã học gì, đang tiến bộ ở đâu và cần hỗ trợ điều gì.
+              </p>
+            </div>
+
+            {/* Cột phải: Thẻ hành trình học tập minh họa */}
+            <div className="w-full lg:w-[540px] bg-white border border-[#dce4eb] rounded-xl p-6 space-y-3.5 shadow-xs">
+              <h3 className="text-base font-semibold text-[#172b4d]">
+                Một hành trình học tập minh họa
+              </h3>
+              <p className="text-xs text-[#52677d]">
+                Lê Hoàng Nam · Toán lớp 8 · Sau 4 tuần
+              </p>
+              
+              <div className="space-y-1 pt-1">
+                <p className="text-xs font-semibold text-[#33465c]">Nền tảng</p>
+                <p className="text-xs text-[#52677d]">Tự làm đúng từ 6/10 → 8/10 bài</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-[#33465c]">Thói quen</p>
+                <p className="text-xs text-[#52677d]">Chủ động trình bày cách giải và hoàn thành bài tập</p>
+              </div>
+
+              <p className="text-[11px] text-[#52677d] pt-2 border-t border-slate-100 italic leading-relaxed">
+                Kết quả phụ thuộc nền tảng, sự tham gia và lộ trình của mỗi học viên. Không cam kết điểm số.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 8. TRANSPARENT FEES ("HỌC PHÍ DỄ HIỂU" - Khớp 100% Ảnh 1 & 2) */}
+        <section className="px-4 sm:px-8 lg:px-20 py-14">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+                HỌC PHÍ DỄ HIỂU
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+                Rõ đơn giá. Đúng số buổi đã học.
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Tiểu học */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[#172b4d]">Tiểu học</h3>
+                  <p className="text-2xl font-bold text-[#116f7c]">180.000–250.000 ₫</p>
+                  <p className="text-xs text-[#52677d] leading-relaxed">
+                    / buổi 90 phút · Năng khiếu và kỹ năng: Piano, Vẽ, Cờ vua, Kỹ năng sống<br />
+                    Theo TT 29/2024/TT-BGDĐT, học viên tiểu học chỉ học môn năng khiếu và kỹ năng.
+                  </p>
+                  <div className="text-xs text-[#33465c] space-y-1.5 pt-3 border-t border-slate-100">
+                    <p>✓ Báo cáo sau buổi học</p>
+                    <p>✓ Bài tập & tài liệu phù hợp</p>
+                    <p>✓ Điều phối hỗ trợ lịch học</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* THCS */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[#172b4d]">THCS</h3>
+                  <p className="text-2xl font-bold text-[#116f7c]">220.000–320.000 ₫</p>
+                  <p className="text-xs text-[#52677d] leading-relaxed">
+                    / buổi 90 phút · Gia sư 1:1 tại nhà
+                  </p>
+                  <div className="text-xs text-[#33465c] space-y-1.5 pt-3 border-t border-slate-100">
+                    <p>✓ Báo cáo sau buổi học</p>
+                    <p>✓ Bài tập & tài liệu phù hợp</p>
+                    <p>✓ Điều phối hỗ trợ lịch học</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* THPT */}
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[#172b4d]">THPT</h3>
+                  <p className="text-2xl font-bold text-[#116f7c]">280.000–400.000 ₫</p>
+                  <p className="text-xs text-[#52677d] leading-relaxed">
+                    / buổi 90 phút · Gia sư 1:1 tại nhà
+                  </p>
+                  <div className="text-xs text-[#33465c] space-y-1.5 pt-3 border-t border-slate-100">
+                    <p>✓ Báo cáo sau buổi học</p>
+                    <p>✓ Bài tập & tài liệu phù hợp</p>
+                    <p>✓ Điều phối hỗ trợ lịch học</p>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <p className="text-xs text-[#52677d]">
+              Khoảng phí tham khảo theo môn, khối lớp và kinh nghiệm gia sư. Đơn giá học thử được báo trước. Chỉ tính buổi đã xác nhận: vắng có phép 0%, vắng không phép 50%.
+            </p>
           </div>
         </section>
 
-        {/* TRUST & STATS STRIP */}
-        <section className="border-y border-border bg-card/50 py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 text-center">
-              <div>
-                <p className="text-3xl font-extrabold text-primary sm:text-4xl">150+</p>
-                <p className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">
-                  Gia sư đã xác minh hồ sơ
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-foreground sm:text-4xl">200+</p>
-                <p className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">
-                  Lớp học hoạt động thường xuyên
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-primary sm:text-4xl">2.000+</p>
-                <p className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">
-                  Buổi học đối soát mỗi tháng
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-[#116f7c] sm:text-4xl">100%</p>
-                <p className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">
-                  Miễn phí buổi học thử không đạt
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CORE SERVICES */}
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Dịch vụ gia sư đáp ứng mọi mục tiêu học tập
+        {/* 9. TESTIMONIALS ("GÓC NHÌN TỪ GIA ĐÌNH" - Khớp 100% Ảnh 2) */}
+        <section className="bg-[#f5f8fa] px-4 sm:px-8 lg:px-20 py-14 border-t border-[#dce4eb]">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+                GÓC NHÌN TỪ GIA ĐÌNH
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+                An tâm vì luôn biết con đang học thế nào
               </h2>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Cung cấp hình thức linh hoạt, phù hợp với thời gian biểu và ngân sách của từng gia đình
-              </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              {/* Card 1 */}
-              <Card className="hover:shadow-md transition-shadow border-border">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2">
-                    <GraduationCap className="h-6 w-6" />
-                  </div>
-                  <CardTitle>Gia sư 1 kèm 1 tại nhà</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Gia sư đến tận nhà học viên tại các khu vực TP. Hồ Chí Minh. Lộ trình cá nhân hóa theo học lực và mục tiêu cụ thể.
-                  </p>
-                  <ul className="text-xs text-muted-foreground space-y-1.5">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Thời lượng 90–120 phút/buổi</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Điểm danh & nhận xét từng buổi học</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-3">
+                <p className="text-[#80520b] text-sm">★★★★★</p>
+                <p className="text-base text-[#172b4d] leading-relaxed font-medium">
+                  “Cô giải thích kiên nhẫn. Báo cáo sau mỗi buổi giúp tôi biết Nam cần luyện thêm điều gì.”
+                </p>
+                <p className="text-xs text-[#52677d]">Trần Thu Hà · Phụ huynh</p>
+              </div>
 
-              {/* Card 2 */}
-              <Card className="hover:shadow-md transition-shadow border-border">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-xl bg-secondary text-primary-deep flex items-center justify-center mb-2">
-                    <Users className="h-6 w-6" />
-                  </div>
-                  <CardTitle>Học nhóm nhỏ (2–4 bạn)</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Dành cho anh chị em trong nhà hoặc bạn bè cùng lớp học chung địa điểm. Giúp tăng tương tác học tập và tiết kiệm học phí mỗi bạn.
-                  </p>
-                  <ul className="text-xs text-muted-foreground space-y-1.5">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Học phí/buổi ưu đãi theo số học viên</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Điểm danh riêng biệt từng học viên</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-
-              {/* Card 3 */}
-              <Card className="hover:shadow-md transition-shadow border-border">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-xl bg-accent/20 text-primary flex items-center justify-center mb-2">
-                    <CalendarCheck className="h-6 w-6" />
-                  </div>
-                  <CardTitle>Gia sư trực tuyến</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Học qua Google Meet / Zoom không giới hạn địa lý. Phù hợp cho ôn thi chuyên đề, học ngoại ngữ, hoặc học sinh ở xa.
-                  </p>
-                  <ul className="text-xs text-muted-foreground space-y-1.5">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Mức học phí linh hoạt, tiết kiệm</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Chia sẻ bài giảng và tài liệu học trực tiếp</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-6 space-y-3">
+                <p className="text-[#80520b] text-sm">★★★★★</p>
+                <p className="text-base text-[#172b4d] leading-relaxed font-medium">
+                  “Con hào hứng hơn với Toán. Trung tâm hỗ trợ thống nhất lịch rõ ràng ngay từ đầu.”
+                </p>
+                <p className="text-xs text-[#52677d]">Nguyễn Ngọc Mai · Phụ huynh</p>
+              </div>
             </div>
+
+            <p className="text-xs text-[#52677d]">Nhận xét minh họa.</p>
           </div>
         </section>
 
-        {/* 4-STEP PROCESS (Hình 1 Báo cáo SE100) */}
-        <section className="bg-muted/40 py-16 sm:py-20 border-t border-border">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <Badge variant="secondary" className="mb-2">Quy trình chuẩn</Badge>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                4 bước đơn giản từ đăng ký đến lớp học chính thức
+        {/* 10. FAQS ("GIA ĐÌNH THƯỜNG HỎI" - Khớp 100% Ảnh 2) */}
+        <section className="px-4 sm:px-8 lg:px-20 py-14 border-t border-[#dce4eb]">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#116f7c] uppercase tracking-wider">
+                GIA ĐÌNH THƯỜNG HỎI
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+                Giải đáp trước khi bắt đầu
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Quy trình minh bạch đảm bảo gia sư phù hợp và quyền lợi học thử của học viên
-              </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
-              <div className="rounded-xl border border-border bg-card p-5 relative">
-                <span className="text-3xl font-black text-primary/20">01</span>
-                <h3 className="text-base font-bold text-foreground mt-2 mb-1.5">Gửi yêu cầu học</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Phụ huynh gửi thông tin môn học, lớp, thời gian và mục tiêu. NV tư vấn liên hệ trong 24 giờ.
+            <div className="space-y-4">
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-5 space-y-2">
+                <h3 className="text-base font-semibold text-[#172b4d]">
+                  Gia sư được lựa chọn như thế nào?
+                </h3>
+                <p className="text-sm text-[#33465c] leading-relaxed">
+                  Trung tâm xác minh hồ sơ, lọc theo chuyên môn, lịch, khu vực và ngân sách, rồi đề xuất tối đa 3 người để gia đình chọn.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border bg-card p-5 relative">
-                <span className="text-3xl font-black text-primary/20">02</span>
-                <h3 className="text-base font-bold text-foreground mt-2 mb-1.5">Đề xuất ≤ 3 gia sư</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Hệ thống chấm điểm ghép theo môn, khu vực, lịch rảnh. Gửi 3 hồ sơ để gia đình chọn lựa.
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-5 space-y-2">
+                <h3 className="text-base font-semibold text-[#172b4d]">
+                  Nếu buổi học thử chưa phù hợp thì sao?
+                </h3>
+                <p className="text-sm text-[#33465c] leading-relaxed">
+                  Gia đình trao đổi với điều phối viên để điều chỉnh nhu cầu và nhận đề xuất khác. Không tự động mở lớp sau học thử.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border bg-card p-5 relative border-primary/40 shadow-xs">
-                <span className="text-3xl font-black text-primary/40">03</span>
-                <h3 className="text-base font-bold text-foreground mt-2 mb-1.5">Học thử 1 buổi</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Đánh giá phương pháp và tương tác. Nếu không đạt: <strong>miễn phí 100%</strong> và đổi gia sư khác.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-border bg-card p-5 relative">
-                <span className="text-3xl font-black text-primary/20">04</span>
-                <h3 className="text-base font-bold text-foreground mt-2 mb-1.5">Mở lớp & Trả sau</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Lập lịch cố định, sinh buổi học. Phụ huynh thanh toán học phí vào ngày 10 hằng tháng theo số buổi học thực tế.
+              <div className="bg-white border border-[#dce4eb] rounded-xl p-5 space-y-2">
+                <h3 className="text-base font-semibold text-[#172b4d]">
+                  Học phí được tính và thanh toán thế nào?
+                </h3>
+                <p className="text-sm text-[#33465c] leading-relaxed">
+                  Ngày 01 lập nháp cho tháng trước, ngày 03 phát hành, hạn ngày 10. Thanh toán thủ công qua chuyển khoản hoặc tiền mặt có phiếu thu; kế toán đối chiếu và ghi nhận.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* CTA BANNER */}
-        <section className="bg-primary py-12 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="space-y-1 text-center sm:text-left">
-              <h3 className="text-xl sm:text-2xl font-bold">
-                Bạn cần tìm gia sư cho con hoặc muốn đăng ký làm gia sư?
-              </h3>
-              <p className="text-sm text-white/80">
-                Đội ngũ điều phối viên của Peasy Edu luôn sẵn sàng hỗ trợ tư vấn miễn phí.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <Link href="/dich-vu-hoc-phi">
-                <Button variant="secondary" size="lg" className="font-bold">
-                  Bảng giá & Dịch vụ
+        {/* 11. INVITATION CTA BANNER (Aqua #77c5cf - Khớp 100% Ảnh 2) */}
+        <section className="bg-[#77c5cf] px-4 sm:px-8 lg:px-20 py-14 text-center">
+          <div className="mx-auto max-w-3xl space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#172b4d]">
+              Bắt đầu từ điều con cần hôm nay.
+            </h2>
+            <p className="text-sm text-[#172b4d]/90">
+              Chia sẻ nhu cầu, để PeasyEdu cùng gia đình tìm người đồng hành.
+            </p>
+            <div className="pt-2">
+              <Link href="/yeu-cau-tim-gia-su">
+                <Button className="h-11 px-6 bg-white hover:bg-slate-50 text-[#172b4d] font-semibold rounded-lg shadow-sm">
+                  <span>Gửi nhu cầu tìm gia sư</span>
+                  <ArrowRight className="h-4 w-4 ml-1.5" />
                 </Button>
               </Link>
             </div>
+            <p className="text-xs text-[#172b4d]/80 pt-1">
+              028 3822 0123 · Tư vấn 08:00–20:00
+            </p>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
+      {/* 12. Footer */}
       <PublicFooter />
     </div>
   );
