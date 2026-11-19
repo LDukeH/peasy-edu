@@ -49,7 +49,7 @@ export default function AccountsPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(([label, value]) => (
           <div key={label} className="flex min-h-[104px] flex-col gap-1.5 rounded-[10px] border border-line bg-white p-5">
-            <p className="text-xs leading-[18px] text-muted">{label}</p>
+            <p className="text-xs leading-[18px] text-text-muted">{label}</p>
             <p className="text-2xl leading-10 text-ink">{value}</p>
           </div>
         ))}
@@ -64,7 +64,7 @@ export default function AccountsPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] border-collapse text-left">
             <thead>
-              <tr className="text-sm font-semibold leading-5 text-muted">
+              <tr className="text-sm font-semibold leading-5 text-text-muted">
                 <th scope="col" className="w-[250px] py-2.5 pr-3">Người dùng</th>
                 <th scope="col" className="w-[160px] py-2.5 pr-3">Vai trò</th>
                 <th scope="col" className="w-[190px] py-2.5 pr-3">Số điện thoại</th>
@@ -79,7 +79,7 @@ export default function AccountsPage() {
                   <tr key={a.id} className="border-b border-line align-middle">
                     <td className="py-3 pr-3">
                       <p className="text-sm font-semibold leading-5 text-ink">{a.fullName}</p>
-                      <p className="mt-[3px] text-xs leading-[18px] text-muted">
+                      <p className="mt-[3px] text-xs leading-[18px] text-text-muted">
                         {a.code}
                         {isMe && " · Đang đăng nhập"}
                       </p>
@@ -89,7 +89,7 @@ export default function AccountsPage() {
                     <td className="py-3 pr-3"><StatusBadge status={a.status} /></td>
                     <td className="py-3">
                       {isMe ? (
-                        <span className="text-xs leading-[18px] text-muted">Tài khoản của bạn</span>
+                        <span className="text-xs leading-[18px] text-text-muted">Tài khoản của bạn</span>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {a.status === "BI_KHOA" ? (
@@ -133,7 +133,7 @@ export default function AccountsPage() {
           </table>
         </div>
 
-        <p className="text-xs leading-[18px] text-muted">
+        <p className="text-xs leading-[18px] text-text-muted">
           Không khóa tài khoản đang sử dụng. Khóa truy cập không tự dừng các lớp đang vận hành.
         </p>
       </section>

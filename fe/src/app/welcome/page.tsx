@@ -26,7 +26,7 @@ export default function WelcomePage() {
         <h1 className="text-2xl font-semibold leading-10 text-ink">
           Xin chào, {account.fullName}
         </h1>
-        <p className="text-sm leading-[22px] text-muted">
+        <p className="text-sm leading-[22px] text-text-muted">
           Đăng nhập thành công với vai trò <b>{ROLE_LABEL[account.role]}</b> (
           {formatPhone(account.phone)}). Giao diện cho vai trò này sẽ được bổ
           sung ở các bước sau.

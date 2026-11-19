@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka, Inter } from "next/font/google";
 import "./globals.css";
+import { AppProviders } from "@/providers/app-providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -18,13 +19,19 @@ export const metadata: Metadata = {
   description: "PeasyEdu · Cùng con tiến bộ",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="vi"
       className={`${inter.variable} ${fredoka.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

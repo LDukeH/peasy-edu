@@ -87,7 +87,7 @@ export default function LoginPage() {
           <h1 className="text-[32px] font-semibold leading-[44px] text-body">
             Chào mừng trở lại
           </h1>
-          <p className="text-sm leading-[22px] text-muted">
+          <p className="text-sm leading-[22px] text-text-muted">
             Đăng nhập bằng tài khoản được cấp hoặc đã đăng ký. Không cần chọn
             vai trò để thay đổi quyền.
           </p>
@@ -142,18 +142,18 @@ export default function LoginPage() {
             </Button>
           </div>
 
-          <p className="text-sm leading-[22px] text-muted">
+          <p className="text-sm leading-[22px] text-text-muted">
             Chưa có tài khoản?{" "}
             <Link href="/register" className="text-brand hover:underline">
               Đăng ký Phụ huynh / Gia sư
             </Link>
           </p>
-          <p className="text-xs leading-[18px] text-muted">
+          <p className="text-xs leading-[18px] text-text-muted">
             Hỗ trợ đăng nhập: 028 3822 0123 · Không chia sẻ mật khẩu.
           </p>
         </form>
 
-        <details className="w-full max-w-[560px] rounded-lg border border-dashed border-line-strong bg-canvas p-4 text-xs leading-[18px] text-muted">
+        <details className="w-full max-w-[560px] rounded-lg border border-dashed border-line-strong bg-canvas p-4 text-xs leading-[18px] text-text-muted">
           <summary className="cursor-pointer font-semibold text-body">
             Tài khoản demo (chỉ để test, chưa nối backend)
           </summary>

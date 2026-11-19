@@ -1,6 +1,55 @@
 @import "tailwindcss";
 
+:root {
+  --background: #f8fafc;
+  --foreground: #10213a;
+  --card: #ffffff;
+  --card-foreground: #10213a;
+  --popover: #ffffff;
+  --popover-foreground: #10213a;
+  --primary: #116f7c;
+  --primary-foreground: #ffffff;
+  --primary-deep: #10213a;
+  --secondary: #e2edf6;
+  --secondary-foreground: #10213a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #77c5cf;
+  --accent-foreground: #10213a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #116f7c;
+  --radius: 0.5rem;
+}
+
 @theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-deep: var(--primary-deep);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
   --color-brand: #116f7c;
   --color-brand-hover: #0e5f6a;
   --color-brand-soft: #ddf2f4;
@@ -10,7 +59,7 @@
   --color-logo-light: #3c94a4;
   --color-ink: #172b4d;
   --color-body: #33465c;
-  --color-muted: #52677d;
+  --color-text-muted: #52677d;
   --color-line: #dce4eb;
   --color-line-strong: #c5d0da;
   --color-field: #bac7d6;
@@ -29,9 +78,10 @@
 }
 
 body {
-  background: var(--color-canvas);
-  color: var(--color-body);
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
+  min-height: 100vh;
 }
 
 :focus-visible {

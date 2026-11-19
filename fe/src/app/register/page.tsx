@@ -264,14 +264,14 @@ export default function RegisterPage() {
                     <button type="button" onClick={changeEmail} className="cursor-pointer hover:underline">
                       Đổi địa chỉ email
                     </button>
-                    {resent && <span className="text-muted"> · Đã gửi lại email.</span>}
+                    {resent && <span className="text-text-muted"> · Đã gửi lại email.</span>}
                   </p>
                   {role === "PHU_HUYNH" && (
-                    <p className="text-xs leading-[18px] text-muted">
+                    <p className="text-xs leading-[18px] text-text-muted">
                       YC01024 được giữ lại và sẽ gắn với tài khoản sau xác minh.
                     </p>
                   )}
-                  <div className="rounded-lg border border-dashed border-line-strong p-3 text-xs leading-[18px] text-muted">
+                  <div className="rounded-lg border border-dashed border-line-strong p-3 text-xs leading-[18px] text-text-muted">
                     Demo: chưa có email thật.{" "}
                     <button type="button" onClick={simulateVerify} className="cursor-pointer font-semibold text-brand hover:underline">
                       Mô phỏng bấm liên kết xác minh

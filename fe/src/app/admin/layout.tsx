@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {!granted && (
         <div
           role="status"
-          className="flex flex-1 items-center justify-center text-sm text-muted"
+          className="flex flex-1 items-center justify-center text-sm text-text-muted"
         >
           Đang kiểm tra quyền truy cập…
         </div>
@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div hidden={!granted} className={granted ? "flex-1 lg:pl-[228px]" : undefined}>
         {granted && account && <AdminSidebar account={account} />}
         <div className="flex min-h-screen flex-col">
-          <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-line bg-white px-8 text-xs leading-[18px] text-muted">
+          <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-line bg-white px-8 text-xs leading-[18px] text-text-muted">
             <p>
               <span className="font-brand font-bold text-logo-dark">Peasy</span>
               <span className="font-brand font-bold text-logo-light">Edu</span>

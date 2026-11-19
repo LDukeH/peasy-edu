@@ -18,7 +18,7 @@ export function AdminTabs() {
         const cls = "rounded-lg px-4 py-3 text-sm font-semibold leading-5 whitespace-nowrap";
         if (!t.href)
           return (
-            <span key={t.label} aria-disabled="true" title="Sắp có" className={`${cls} cursor-not-allowed text-muted/60`}>
+            <span key={t.label} aria-disabled="true" title="Sắp có" className={`${cls} cursor-not-allowed text-text-muted/60`}>
               {t.label}
             </span>
           );
@@ -27,7 +27,7 @@ export function AdminTabs() {
             key={t.label}
             href={t.href}
             aria-current={active ? "page" : undefined}
-            className={`${cls} ${active ? "bg-brand-soft text-brand" : "text-muted hover:bg-white"}`}
+            className={`${cls} ${active ? "bg-brand-soft text-brand" : "text-text-muted hover:bg-white"}`}
           >
             {t.label}
           </Link>

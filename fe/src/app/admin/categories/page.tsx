@@ -65,7 +65,7 @@ export default function CategoriesPage() {
                   title={group === "GRADE" ? "Chọn lớp rồi bấm nút Sửa" : "Bấm để sửa"}
                   className={`flex w-full cursor-pointer items-center gap-2 py-2 text-left hover:bg-canvas ${selected ? "bg-brand-soft/60" : ""}`}
                 >
-                  <span className={`flex-1 text-sm leading-[22px] ${c.active ? "text-body" : "text-muted line-through"}`}>
+                  <span className={`flex-1 text-sm leading-[22px] ${c.active ? "text-body" : "text-text-muted line-through"}`}>
                     {c.name}
                   </span>
                   <span className={`text-xs leading-[18px] whitespace-nowrap ${c.active ? "text-brand" : "text-warn"}`}>
@@ -76,7 +76,7 @@ export default function CategoriesPage() {
             );
           })}
         </ul>
-        {note && <p className="text-xs leading-[18px] text-muted">{note}</p>}
+        {note && <p className="text-xs leading-[18px] text-text-muted">{note}</p>}
       </section>
     );
   }

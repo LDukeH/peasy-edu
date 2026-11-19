@@ -88,7 +88,7 @@ export function CreateAccountDialog({
   return (
     <Modal title="Tạo tài khoản" onClose={onClose}>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
-        <p className="text-sm leading-[22px] text-muted">
+        <p className="text-sm leading-[22px] text-text-muted">
           Tài khoản mới đăng nhập bằng số điện thoại. Email là thông tin bổ sung, không bắt buộc.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -204,7 +204,7 @@ export function RoleRequestDialog({
   return (
     <Modal title="Đề nghị bổ sung vai trò" onClose={onClose}>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
-        <p className="text-sm leading-[22px] text-muted">
+        <p className="text-sm leading-[22px] text-text-muted">
           {account.code} · {account.fullName}
           <br />
           Vai trò hiện tại: {ROLE_LABEL[account.role]}

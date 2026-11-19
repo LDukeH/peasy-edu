@@ -100,7 +100,7 @@ export default function SettingsPage() {
           <h2 className="text-base font-semibold leading-6 text-ink">
             Ma trận quyền truy cập · 8 vai trò
           </h2>
-          <p className="text-xs leading-[18px] text-muted">
+          <p className="text-xs leading-[18px] text-text-muted">
             Quản lý: tạo / sửa / duyệt trong phạm vi · Xem: chỉ đọc · —: không truy cập
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function SettingsPage() {
                   <th
                     key={h}
                     scope="col"
-                    className={`h-9 px-3.5 font-semibold ${i === 0 ? "text-ink" : "text-muted"}`}
+                    className={`h-9 px-3.5 font-semibold ${i === 0 ? "text-ink" : "text-text-muted"}`}
                   >
                     {h}
                   </th>
@@ -128,7 +128,7 @@ export default function SettingsPage() {
                         {cell}
                       </th>
                     ) : (
-                      <td key={i} className="h-8 px-3.5 text-muted">
+                      <td key={i} className="h-8 px-3.5 text-text-muted">
                         {cell}
                       </td>
                     ),
@@ -152,7 +152,7 @@ export default function SettingsPage() {
 
         <section className="flex flex-col gap-[18px] rounded-xl border border-line bg-white p-6">
           <h2 className="text-base font-semibold leading-6 text-ink">Lưu thông tin trung tâm</h2>
-          <p className="text-xs font-semibold leading-[18px] text-muted">
+          <p className="text-xs font-semibold leading-[18px] text-text-muted">
             <span className={dirty ? "text-warn-dot" : justSaved ? "text-brand" : "text-warn-dot"}>●</span>{" "}
             {dirty ? "Có thay đổi chưa lưu" : justSaved ? "Đã lưu thay đổi" : "Chưa có thay đổi"}
           </p>

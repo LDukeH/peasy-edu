@@ -18,5 +18,10 @@
     "test:be": "npm run test --workspace=be",
     "build:all": "npm run build --workspace=be && npm run build --workspace=fe",
     "db:deploy": "npm run prisma:deploy --workspace=be"
+  },
+  "msw": {
+    "workerDirectory": [
+      "fe\\public"
+    ]
   }
 }

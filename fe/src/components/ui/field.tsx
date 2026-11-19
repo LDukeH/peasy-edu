@@ -19,13 +19,13 @@ interface ShellProps {
 }
 
 const labelCls: Record<Variant, string> = {
-  auth: "text-xs leading-[18px] text-muted",
+  auth: "text-xs leading-[18px] text-text-muted",
   dialog: "text-sm font-semibold leading-5 text-ink",
 };
 
 function controlCls(variant: Variant, hasError: boolean) {
   const base =
-    "w-full rounded-lg bg-white text-sm leading-[22px] text-ink placeholder:text-[#8594a8] disabled:bg-canvas disabled:text-muted";
+    "w-full rounded-lg bg-white text-sm leading-[22px] text-ink placeholder:text-[#8594a8] disabled:bg-canvas disabled:text-text-muted";
   const pad = variant === "auth" ? "px-3 py-2.5" : "px-3.5 py-3";
   const border = hasError
     ? "border-[1.5px] border-danger-field"
@@ -57,7 +57,7 @@ function Shell({
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-msg`} className="text-xs leading-[18px] text-muted">
+        <p id={`${id}-msg`} className="text-xs leading-[18px] text-text-muted">
           {hint}
         </p>
       ) : null}
