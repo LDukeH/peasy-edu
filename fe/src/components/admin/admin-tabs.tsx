@@ -5,9 +5,7 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/admin/settings", label: "Trung tâm & quyền" },
-  { href: "/admin/accounts", label: "Tài khoản" },
   { href: "/admin/categories", label: "Danh mục" },
-  { href: null, label: "Nhật ký truy cập" },
   { href: null, label: "Sao lưu" },
 ];
 

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AdminTabs } from "@/components/admin/admin-tabs";
 import {
   CreateAccountDialog,
   LockDialog,
@@ -46,7 +45,6 @@ export default function AccountsPage() {
         title="Tài khoản"
         subtitle="Tạo và quản lý quyền truy cập theo vai trò, không thay đổi quyền nghiệp vụ khi chưa được duyệt."
       />
-      <AdminTabs />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(([label, value]) => (
