@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -7,13 +8,21 @@ import { AppModule } from './app.module.js';
 import { createSwaggerDocument } from './swagger.config.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.set('trust proxy', 1);
   app.setGlobalPrefix('api');
 
-  const frontendUrl = process.env.FRONTEND_URL;
-  if (frontendUrl) {
-    app.enableCors({ origin: frontendUrl, credentials: true });
+  const frontendUrls = (process.env.FRONTEND_URL ?? '')
+    .split(',')
+    .map((url) => url.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+
+  if (frontendUrls.length > 0) {
+    app.enableCors({
+      origin: frontendUrls.length === 1 ? frontendUrls[0] : frontendUrls,
+      credentials: true,
+    });
   }
 
   app.use(helmet());
