@@ -7,11 +7,13 @@ Dự án **Peasy Edu** sử dụng mô hình **Monorepo** (`npm workspaces`) k�
 ## 1. Công nghệ & Cấu trúc thư mục
 
 ### Tech Stack
+
 - **Monorepo:** npm Workspaces (`Node.js v24.20.0`)
 - **Backend (`be/`):** NestJS 12, Prisma 6 (PostgreSQL / Supabase), Swagger (`@nestjs/swagger`), JWT Cookie Auth, Vitest, Oxlint.
 - **Frontend (`fe/`):** Next.js 16 (App Router + Turbopack), React 19, Tailwind CSS v4, TanStack Query v5, Axios, Zustand, Orval v8, MSW v3 (Mock Service Worker).
 
 ### Cấu trúc thư mục chính
+
 ```text
 peasy-edu/
 ├── be/                         # Workspace Backend (NestJS)
@@ -39,10 +41,12 @@ peasy-edu/
 ## 2. Cài đặt lần đầu (Sau khi `git clone`)
 
 ### Yêu cầu hệ thống
+
 - **Node.js:** `v24.20.0` (khuyến khích dùng `nvm use` hoặc `fnm use` vì dự án có sẵn file `.nvmrc`).
 - **npm:** đi kèm theo Node.js.
 
 ### Bước 1: Chạy lệnh khởi tạo tự động
+
 Tại thư mục gốc (`peasy-edu/`), chạy lệnh:
 
 ```bash
@@ -50,6 +54,7 @@ npm run setup
 ```
 
 > **Lệnh `npm run setup` tự động làm những gì?**
+>
 > 1. Copy `be/.env.example` $\rightarrow$ `be/.env` và `fe/.env.example` $\rightarrow$ `fe/.env.local` (nếu chưa tồn tại).
 > 2. Chạy `npm install` cho toàn bộ monorepo (`be` và `fe`).
 > 3. Chạy `npm run db:generate` để sinh Prisma Client cho BE.
@@ -58,7 +63,9 @@ npm run setup
 ### Bước 2: Cập nhật biến môi trường (`.env`)
 
 #### Dành cho Backend (`be/.env`)
+
 Mở file `be/.env` và điền chuỗi kết nối Supabase PostgreSQL của nhóm:
+
 ```env
 PORT=4000
 FRONTEND_URL=http://localhost:3000
@@ -73,7 +80,9 @@ JWT_REFRESH_SECRET="dev-refresh-secret-change-me"
 ```
 
 #### Dành cho Frontend (`fe/.env.local`)
+
 Mở file `fe/.env.local`:
+
 ```env
 # "true" = Bật MSW Mock (dùng khi BE chưa code xong logic, từ Thứ 3 -> Thứ 5)
 # "false" = Tắt Mock, gọi thẳng API thật của BE (dùng khi tích hợp vào Thứ 6)
@@ -89,20 +98,20 @@ BACKEND_URL="http://localhost:4000"
 
 Tất cả các lệnh dưới đây đều được chạy tại **thư mục gốc (`peasy-edu/`)**:
 
-| Lệnh | Tác dụng | Ai dùng |
-| :--- | :--- | :---: |
-| `npm run setup` | Cài đặt lần đầu hoặc đồng bộ lại toàn bộ môi trường sau khi pull code lớn | Cả hai |
-| `npm run dev:fe` | Chạy Frontend tại `http://localhost:3000` | **FE** |
-| `npm run gen:api` | Đọc `openapi.json` $\rightarrow$ Sinh lại React Query hooks + TypeScript types + MSW mocks | **FE** |
-| `npm run dev:be` | Chạy Backend tại `http://localhost:4000` (Swagger UI: `http://localhost:4000/api/docs`) | **BE** |
-| `npm run openapi:export` | Build BE & xuất file `openapi.json` từ Controller/DTO (không cần kết nối DB) | **BE** |
-| `npm run contract:sync` | Chạy gộp `openapi:export` + `gen:api` (kiểm tra nhanh từ BE sang FE) | Cả hai |
-| `npm run db:generate` | Sinh lại `@prisma/client` sau khi `schema.prisma` thay đổi | **BE** |
-| `npm run db:migrate` | Tạo file migration mới & áp dụng lên DB (**Chỉ 1 người BE giữ lượt chạy mỗi tuần**) | **BE** |
-| `npm run db:deploy` | Áp dụng các migration đã có sẵn (**Dùng cho bạn BE còn lại sau khi pull code**) | **BE** |
-| `npm run db:seed` | Nạp dữ liệu mẫu (`be/prisma/seed.ts`) vào Database | **BE** |
-| `npm run test:be` | Chạy Unit Test của Backend bằng Vitest | **BE** |
-| `npm run build:all` | Kiểm tra build cả Backend và Frontend (giống bước kiểm tra trên CI) | Cả hai |
+| Lệnh                     | Tác dụng                                                                                   | Ai dùng |
+| :----------------------- | :----------------------------------------------------------------------------------------- | :-----: |
+| `npm run setup`          | Cài đặt lần đầu hoặc đồng bộ lại toàn bộ môi trường sau khi pull code lớn                  | Cả hai  |
+| `npm run dev:fe`         | Chạy Frontend tại `http://localhost:3000`                                                  | **FE**  |
+| `npm run gen:api`        | Đọc `openapi.json` $\rightarrow$ Sinh lại React Query hooks + TypeScript types + MSW mocks | **FE**  |
+| `npm run dev:be`         | Chạy Backend tại `http://localhost:4000` (Swagger UI: `http://localhost:4000/api/docs`)    | **BE**  |
+| `npm run openapi:export` | Build BE & xuất file `openapi.json` từ Controller/DTO (không cần kết nối DB)               | **BE**  |
+| `npm run contract:sync`  | Chạy gộp `openapi:export` + `gen:api` (kiểm tra nhanh từ BE sang FE)                       | Cả hai  |
+| `npm run db:generate`    | Sinh lại `@prisma/client` sau khi `schema.prisma` thay đổi                                 | **BE**  |
+| `npm run db:migrate`     | Tạo file migration mới & áp dụng lên DB (**Chỉ 1 người BE giữ lượt chạy mỗi tuần**)        | **BE**  |
+| `npm run db:deploy`      | Áp dụng các migration đã có sẵn (**Dùng cho bạn BE còn lại sau khi pull code**)            | **BE**  |
+| `npm run db:seed`        | Nạp dữ liệu mẫu (`be/prisma/seed.ts`) vào Database                                         | **BE**  |
+| `npm run test:be`        | Chạy Unit Test của Backend bằng Vitest                                                     | **BE**  |
+| `npm run build:all`      | Kiểm tra build cả Backend và Frontend (giống bước kiểm tra trên CI)                        | Cả hai  |
 
 ---
 
@@ -122,15 +131,17 @@ flowchart LR
 ### Chi tiết từng bước:
 
 #### Giai đoạn 1: Chốt Contract (Đầu tuần / Thứ 2 - Thứ 3)
+
 1. **BE** tạo Controller và DTO cho tính năng trong tuần (chưa cần viết logic nghiệp vụ phức tạp trong Service, chỉ cần định nghĩa rõ input/output DTO).
 2. **BE** gắn đầy đủ decorator của `@nestjs/swagger` trong DTO (`@ApiProperty({ example: ... })`) và Controller (`@ApiOkResponse({ type: ... })` hoặc dùng Swagger CLI plugin).
 3. **BE** chạy lệnh xuất bản hợp đồng API:
    ```bash
    npm run openapi:export
    ```
-4. **BE** kiểm tra file `openapi.json` đã cập nhật, sau đó commit và push nhánh `contract/*` (hoặc tạo PR vào `dev`).
+4. **BE** kiểm tra file `openapi.json` đã cập nhật, sau đó commit và tạo PR vào `main`.
 
 #### Giai đoạn 2: Phát triển song song (Thứ 3 - Thứ 5)
+
 - **Phía FE:**
   1. Pull code mới nhất có chứa `openapi.json` về máy.
   2. Chạy lệnh sinh code:
@@ -146,6 +157,7 @@ flowchart LR
   - Tiếp tục hoàn thiện logic trong Service, truy vấn Prisma, viết Unit Test (`npm run test:be`).
 
 #### Giai đoạn 3: Tích hợp API thật (Thứ 6)
+
 1. Chạy đồng thời cả BE (`npm run dev:be`) và FE (`npm run dev:fe`).
 2. Trong `fe/.env.local`, đổi:
    ```env

@@ -3,11 +3,19 @@ import Axios, {
   AxiosRequestConfig,
   InternalAxiosRequestConfig,
 } from "axios";
+import { initMocks, isMockingEnabled } from "@/mocks/init";
 
 export const AXIOS_INSTANCE = Axios.create({
   baseURL: "", // Đi qua Next.js rewrite (/api/...)
   withCredentials: true,
 });
+
+const AUTH_NO_RETRY_PATHS = [
+  "/api/auth/refresh",
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/logout",
+];
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -31,8 +39,7 @@ AXIOS_INSTANCE.interceptors.response.use(
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/api/auth/refresh") &&
-      !originalRequest.url?.includes("/api/auth/login")
+      !AUTH_NO_RETRY_PATHS.some((p) => originalRequest.url?.includes(p))
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -67,11 +74,16 @@ export const customInstance = <T>(
   options?: AxiosRequestConfig,
 ): Promise<T> => {
   const controller = new AbortController();
-  const promise = AXIOS_INSTANCE({
-    ...config,
-    ...options,
-    signal: controller.signal,
-  }).then(({ data }) => data);
+  const execute = () =>
+    AXIOS_INSTANCE({
+      ...config,
+      ...options,
+      signal: controller.signal,
+    }).then(({ data }) => data);
+
+  const promise: Promise<T> = isMockingEnabled
+    ? initMocks().then(execute)
+    : execute();
 
   // @ts-expect-error Gắn hàm cancel cho TanStack Query
   promise.cancel = () => controller.abort();
