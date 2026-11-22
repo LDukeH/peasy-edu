@@ -1,24 +1,38 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import {
+  TrangThaiTaiKhoan,
+  VaiTro,
+  type UserDto,
+} from "@/api/generated/model";
+import {
+  getUsersFindAllQueryKey,
+  useUsersCreate,
+  useUsersRemove,
+  useUsersUpdate,
+} from "@/api/generated/peasyApi";
 import { Button } from "@/components/ui/button";
 import { Field, SelectField, TextareaField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { Notice } from "@/components/ui/notice";
+import { extractApiError } from "@/lib/api-error";
 import {
-  createAccountByAdmin,
-  requestRole,
-  setAccountStatus,
-} from "@/mocks/db";
-import { isValidEmail, isValidPhone } from "@/mocks/format";
-import { DEMO_PASSWORD } from "@/mocks/seed";
-import {
-  ASSIGNABLE_ROLES,
-  ROLE_LABEL,
-  ROLE_SCOPE,
-  type Account,
-  type RoleCode,
-} from "@/mocks/types";
+  isValidEmail,
+  isValidPhone,
+  normalizePhone,
+  VAI_TRO_LABEL,
+  VAI_TRO_SCOPE,
+} from "@/lib/auth-labels";
+
+const CREATABLE_ROLES: VaiTro[] = [
+  VaiTro.QUAN_LY,
+  VaiTro.DIEU_PHOI,
+  VaiTro.PHU_HUYNH,
+];
+
+const STAFF_ROLES: VaiTro[] = [VaiTro.QUAN_LY, VaiTro.DIEU_PHOI];
 
 export function ResultDialog({
   message,
@@ -30,20 +44,13 @@ export function ResultDialog({
   return (
     <Modal title="Đã ghi nhận thao tác" onClose={onClose}>
       <Notice>
-        Thao tác đã được ghi nhận trong nhật ký quản trị.
+        Thao tác đã được lưu vào hệ thống.
         {message && <span className="mt-1 block">{message}</span>}
       </Notice>
       <div className="flex gap-3">
         <Button data-autofocus onClick={onClose}>
           Về màn đang xem
         </Button>
-        <span
-          aria-disabled="true"
-          title="Sắp có"
-          className="inline-flex cursor-not-allowed items-center rounded-lg border border-line bg-white px-4 py-[11px] text-sm font-semibold text-body opacity-60"
-        >
-          Xem nhật ký
-        </span>
       </div>
     </Modal>
   );
@@ -56,60 +63,291 @@ export function CreateAccountDialog({
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
+  const queryClient = useQueryClient();
+  const createMutation = useUsersCreate();
+
+  const [tenDangNhap, setTenDangNhap] = useState("");
+  const [matKhau, setMatKhau] = useState("");
+  const [hoTen, setHoTen] = useState("");
+  const [soDienThoai, setSoDienThoai] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<RoleCode>("GIA_SU");
+  const [vaiTro, setVaiTro] = useState<VaiTro>(VaiTro.DIEU_PHOI);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const next: Record<string, string> = {};
-    if (!fullName.trim()) next.fullName = "Vui lòng nhập họ và tên.";
-    if (!isValidPhone(phone))
-      next.phone = "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.";
-    if (email.trim() && !isValidEmail(email)) next.email = "Email chưa đúng định dạng.";
+    const normalizedPhone = normalizePhone(soDienThoai);
+    const username =
+      vaiTro === VaiTro.PHU_HUYNH ? normalizedPhone : tenDangNhap.trim();
+    const isStaff = STAFF_ROLES.includes(vaiTro);
+
+    if (!isValidPhone(soDienThoai)) {
+      next.soDienThoai = "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.";
+    }
+    if (
+      vaiTro !== VaiTro.PHU_HUYNH &&
+      (username.length < 3 || !/^[a-zA-Z0-9._@-]+$/.test(username))
+    ) {
+      next.tenDangNhap =
+        "Tên đăng nhập tối thiểu 3 ký tự (chữ, số, . _ @ -).";
+    }
+    if (matKhau.length < 8 || matKhau.length > 72) {
+      next.matKhau = "Mật khẩu phải từ 8 đến 72 ký tự.";
+    }
+    if (!hoTen.trim()) next.hoTen = "Vui lòng nhập họ và tên.";
+    if (isStaff && !email.trim()) {
+      next.email = "Email là bắt buộc với tài khoản nhân viên.";
+    } else if (email.trim() && !isValidEmail(email)) {
+      next.email = "Email chưa đúng định dạng.";
+    }
     setErrors(next);
     if (Object.keys(next).length) return;
 
-    setBusy(true);
-    const res = await createAccountByAdmin({ fullName, phone, email, role });
-    setBusy(false);
-    if (!res.ok) {
-      setErrors({ [res.field ?? "phone"]: res.error });
-      return;
+    try {
+      const created = await createMutation.mutateAsync({
+        data: {
+          tenDangNhap: username,
+          matKhau,
+          hoTen: hoTen.trim(),
+          soDienThoai: normalizedPhone,
+          email: email.trim() || undefined,
+          vaiTro,
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: getUsersFindAllQueryKey(),
+      });
+      onDone(
+        `Đã tạo tài khoản ${created.tenDangNhap} (${created.maDoiTuong ?? created.hoTen}) với vai trò ${VAI_TRO_LABEL[created.vaiTro]}.`,
+      );
+    } catch (err) {
+      const parsed = extractApiError(err, "Không thể tạo tài khoản.");
+      if (parsed.statusCode === 409) {
+        setErrors({ tenDangNhap: parsed.message });
+      } else {
+        setErrors({ form: parsed.message });
+      }
     }
-    onDone(
-      `Đã tạo ${res.data.code} · ${res.data.fullName}. Trạng thái: Chờ kích hoạt. (Demo) mật khẩu tạm: ${DEMO_PASSWORD}`,
-    );
   }
 
   return (
     <Modal title="Tạo tài khoản" onClose={onClose}>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
         <p className="text-sm leading-[22px] text-text-muted">
-          Tài khoản mới đăng nhập bằng số điện thoại. Email là thông tin bổ sung, không bắt buộc.
+          Tài khoản nhân sự dùng tên đăng nhập riêng; tài khoản phụ huynh nên
+          dùng số điện thoại làm tên đăng nhập.
         </p>
+        {errors.form && <Notice tone="error">{errors.form}</Notice>}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field variant="dialog" label="Họ và tên *" value={fullName} error={errors.fullName}
-            placeholder="Võ Thanh Trúc" onChange={(e) => setFullName(e.target.value)} />
-          <Field variant="dialog" label="Số điện thoại *" type="tel" inputMode="tel" value={phone}
-            error={errors.phone} placeholder="090 700 0123" onChange={(e) => setPhone(e.target.value)} />
+          <Field
+            variant="dialog"
+            label={
+              vaiTro === VaiTro.PHU_HUYNH
+                ? "Tên đăng nhập (tự lấy theo SĐT)"
+                : "Tên đăng nhập *"
+            }
+            value={
+              vaiTro === VaiTro.PHU_HUYNH
+                ? normalizePhone(soDienThoai)
+                : tenDangNhap
+            }
+            disabled={vaiTro === VaiTro.PHU_HUYNH}
+            error={errors.tenDangNhap}
+            placeholder="dieuphoi02"
+            onChange={(e) => setTenDangNhap(e.target.value)}
+          />
+          <Field
+            variant="dialog"
+            label="Mật khẩu ban đầu *"
+            type="password"
+            value={matKhau}
+            error={errors.matKhau}
+            placeholder="Tối thiểu 8 ký tự"
+            onChange={(e) => setMatKhau(e.target.value)}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field variant="dialog" label="Email (không bắt buộc)" type="email" value={email}
-            error={errors.email} placeholder="truc.vo@example.com" onChange={(e) => setEmail(e.target.value)} />
-          <SelectField label="Vai trò ban đầu *" value={role} onChange={(e) => setRole(e.target.value as RoleCode)}>
-            {ASSIGNABLE_ROLES.map((r) => (
-              <option key={r} value={r}>{ROLE_LABEL[r]}</option>
+          <Field
+            variant="dialog"
+            label="Họ và tên *"
+            value={hoTen}
+            error={errors.hoTen}
+            placeholder="Võ Thanh Trúc"
+            onChange={(e) => setHoTen(e.target.value)}
+          />
+          <Field
+            variant="dialog"
+            label="Số điện thoại *"
+            type="tel"
+            inputMode="tel"
+            value={soDienThoai}
+            error={errors.soDienThoai}
+            placeholder="090 700 0123"
+            onChange={(e) => setSoDienThoai(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            variant="dialog"
+            label={
+              STAFF_ROLES.includes(vaiTro) ? "Email *" : "Email (không bắt buộc)"
+            }
+            type="email"
+            value={email}
+            error={errors.email}
+            placeholder="truc.vo@example.com"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <SelectField
+            label="Vai trò *"
+            value={vaiTro}
+            onChange={(e) => setVaiTro(e.target.value as VaiTro)}
+          >
+            {CREATABLE_ROLES.map((r) => (
+              <option key={r} value={r}>
+                {VAI_TRO_LABEL[r]}
+              </option>
             ))}
           </SelectField>
         </div>
-        <Notice>{ROLE_SCOPE[role]} Trạng thái sau khi tạo: Chờ kích hoạt.</Notice>
+        <Notice>{VAI_TRO_SCOPE[vaiTro]}</Notice>
         <div className="flex gap-3">
-          <Button type="submit" disabled={busy}>{busy ? "Đang tạo…" : "Tạo tài khoản"}</Button>
-          <Button variant="secondary" onClick={onClose}>Hủy</Button>
+          <Button type="submit" disabled={createMutation.isPending}>
+            {createMutation.isPending ? "Đang tạo…" : "Tạo tài khoản"}
+          </Button>
+          <Button variant="secondary" onClick={onClose}>
+            Hủy
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+export function EditAccountDialog({
+  account,
+  onClose,
+  onDone,
+}: {
+  account: UserDto;
+  onClose: () => void;
+  onDone: (message: string) => void;
+}) {
+  const queryClient = useQueryClient();
+  const updateMutation = useUsersUpdate();
+
+  const [hoTen, setHoTen] = useState(account.hoTen);
+  const [soDienThoai, setSoDienThoai] = useState(account.soDienThoai ?? "");
+  const [email, setEmail] = useState(account.email ?? "");
+  const [vaiTro, setVaiTro] = useState<VaiTro>(account.vaiTro);
+  const [matKhau, setMatKhau] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const canChangeRole = STAFF_ROLES.includes(account.vaiTro);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    const next: Record<string, string> = {};
+    if (!hoTen.trim()) next.hoTen = "Vui lòng nhập họ và tên.";
+    if (soDienThoai.trim() && !isValidPhone(soDienThoai)) {
+      next.soDienThoai = "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.";
+    }
+    if (email.trim() && !isValidEmail(email)) {
+      next.email = "Email chưa đúng định dạng.";
+    }
+    if (matKhau && (matKhau.length < 8 || matKhau.length > 72)) {
+      next.matKhau = "Mật khẩu mới phải từ 8 đến 72 ký tự.";
+    }
+    setErrors(next);
+    if (Object.keys(next).length) return;
+
+    try {
+      const updated = await updateMutation.mutateAsync({
+        id: account.id,
+        data: {
+          hoTen: hoTen.trim(),
+          soDienThoai: soDienThoai.trim()
+            ? normalizePhone(soDienThoai)
+            : undefined,
+          email: email.trim() || undefined,
+          vaiTro: canChangeRole ? vaiTro : undefined,
+          matKhau: matKhau || undefined,
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: getUsersFindAllQueryKey(),
+      });
+      onDone(
+        `Đã cập nhật ${updated.tenDangNhap} · ${updated.hoTen} (${VAI_TRO_LABEL[updated.vaiTro]}).`,
+      );
+    } catch (err) {
+      const parsed = extractApiError(err, "Không thể cập nhật tài khoản.");
+      setErrors({ form: parsed.message });
+    }
+  }
+
+  return (
+    <Modal title={`Cập nhật tài khoản ${account.tenDangNhap}`} onClose={onClose}>
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
+        {errors.form && <Notice tone="error">{errors.form}</Notice>}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            variant="dialog"
+            label="Họ và tên *"
+            value={hoTen}
+            error={errors.hoTen}
+            onChange={(e) => setHoTen(e.target.value)}
+          />
+          <Field
+            variant="dialog"
+            label="Số điện thoại"
+            type="tel"
+            inputMode="tel"
+            value={soDienThoai}
+            error={errors.soDienThoai}
+            onChange={(e) => setSoDienThoai(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            variant="dialog"
+            label="Email"
+            type="email"
+            value={email}
+            error={errors.email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <SelectField
+            label="Vai trò"
+            value={vaiTro}
+            disabled={!canChangeRole}
+            onChange={(e) => setVaiTro(e.target.value as VaiTro)}
+          >
+            {(canChangeRole ? STAFF_ROLES : [account.vaiTro]).map((r) => (
+              <option key={r} value={r}>
+                {VAI_TRO_LABEL[r]}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+        <Field
+          variant="dialog"
+          label="Đặt lại mật khẩu (để trống nếu giữ nguyên)"
+          type="password"
+          value={matKhau}
+          error={errors.matKhau}
+          placeholder="Nhập mật khẩu mới (8–72 ký tự)"
+          onChange={(e) => setMatKhau(e.target.value)}
+        />
+        <Notice>{VAI_TRO_SCOPE[vaiTro]}</Notice>
+        <div className="flex gap-3">
+          <Button type="submit" disabled={updateMutation.isPending}>
+            {updateMutation.isPending ? "Đang lưu…" : "Lưu thay đổi"}
+          </Button>
+          <Button variant="secondary" onClick={onClose}>
+            Hủy
+          </Button>
         </div>
       </form>
     </Modal>
@@ -122,30 +360,61 @@ export function LockDialog({
   onClose,
   onDone,
 }: {
-  account: Account;
+  account: UserDto;
   unlock: boolean;
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
+  const queryClient = useQueryClient();
+  const removeMutation = useUsersRemove();
+  const updateMutation = useUsersUpdate();
+
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
 
-  function onSubmit(e: FormEvent) {
+  const busy = removeMutation.isPending || updateMutation.isPending;
+
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!unlock && !reason.trim()) {
       setError("Vui lòng nhập lý do thao tác.");
       return;
     }
-    setAccountStatus(account.id, unlock ? "HOAT_DONG" : "BI_KHOA");
-    onDone(`${account.code} · ${account.fullName}: ${unlock ? "đã mở khóa" : "đã khóa"}.`);
+
+    try {
+      if (unlock) {
+        await updateMutation.mutateAsync({
+          id: account.id,
+          data: { trangThai: TrangThaiTaiKhoan.HOAT_DONG },
+        });
+      } else {
+        await removeMutation.mutateAsync({ id: account.id });
+      }
+      await queryClient.invalidateQueries({
+        queryKey: getUsersFindAllQueryKey(),
+      });
+      onDone(
+        `${account.tenDangNhap} · ${account.hoTen}: ${unlock ? "đã mở khóa" : "đã khóa"}.`,
+      );
+    } catch (err) {
+      const parsed = extractApiError(
+        err,
+        unlock ? "Không thể mở khóa tài khoản." : "Không thể khóa tài khoản.",
+      );
+      setError(parsed.message);
+    }
   }
 
   return (
-    <Modal title={`${unlock ? "Mở khóa" : "Khóa"} tài khoản ${account.fullName}?`} onClose={onClose}>
+    <Modal
+      title={`${unlock ? "Mở khóa" : "Khóa"} tài khoản ${account.hoTen}?`}
+      onClose={onClose}
+    >
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
         <Notice tone={unlock ? "info" : "warning"}>
           <span className="block">
-            {account.code} · {account.fullName} · {ROLE_LABEL[account.role]}
+            {account.maDoiTuong ?? account.tenDangNhap} · {account.hoTen} ·{" "}
+            {VAI_TRO_LABEL[account.vaiTro]}
           </span>
           {unlock
             ? "Tài khoản sẽ đăng nhập lại được sau khi mở khóa."
@@ -162,74 +431,20 @@ export function LockDialog({
           }}
         />
         <div className="flex gap-3">
-          <Button type="submit" variant={unlock ? "primary" : "danger"}>
-            {unlock ? "Xác nhận mở khóa" : "Xác nhận khóa"}
+          <Button
+            type="submit"
+            disabled={busy}
+            variant={unlock ? "primary" : "danger"}
+          >
+            {busy
+              ? "Đang xử lý…"
+              : unlock
+                ? "Xác nhận mở khóa"
+                : "Xác nhận khóa"}
           </Button>
-          <Button variant="secondary" onClick={onClose}>Hủy</Button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-export function RoleRequestDialog({
-  account,
-  onClose,
-  onDone,
-}: {
-  account: Account;
-  onClose: () => void;
-  onDone: (message: string) => void;
-}) {
-  const options = ASSIGNABLE_ROLES.filter((r) => r !== account.role);
-  const [role, setRole] = useState<RoleCode>(options[0]);
-  const [reason, setReason] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!reason.trim()) {
-      setError("Vui lòng nhập lý do đề nghị.");
-      return;
-    }
-    setBusy(true);
-    await requestRole({ accountId: account.id, requestedRole: role, reason: reason.trim() });
-    setBusy(false);
-    onDone(
-      `Đã trình Chủ trung tâm đề nghị bổ sung vai trò ${ROLE_LABEL[role]} cho ${account.code}. Tài khoản vẫn giữ quyền ${ROLE_LABEL[account.role]} trong lúc chờ.`,
-    );
-  }
-
-  return (
-    <Modal title="Đề nghị bổ sung vai trò" onClose={onClose}>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
-        <p className="text-sm leading-[22px] text-text-muted">
-          {account.code} · {account.fullName}
-          <br />
-          Vai trò hiện tại: {ROLE_LABEL[account.role]}
-        </p>
-        <SelectField label="Vai trò đề nghị" value={role} onChange={(e) => setRole(e.target.value as RoleCode)}>
-          {options.map((r) => (
-            <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-          ))}
-        </SelectField>
-        <TextareaField
-          label="Lý do"
-          value={reason}
-          error={error}
-          placeholder="Bổ sung nhiệm vụ điều phối lịch và theo dõi các lớp được phân công."
-          onChange={(e) => {
-            setReason(e.target.value);
-            setError("");
-          }}
-        />
-        <Notice tone="warning">
-          Quyền truy cập mở rộng cần Chủ trung tâm phê duyệt. Trong lúc chờ, tài khoản vẫn chỉ có quyền {ROLE_LABEL[account.role]}.
-        </Notice>
-        <div className="flex gap-3">
-          <Button type="submit" disabled={busy}>{busy ? "Đang gửi…" : "Trình Chủ trung tâm"}</Button>
-          <Button variant="secondary" onClick={onClose}>Hủy</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Hủy
+          </Button>
         </div>
       </form>
     </Modal>

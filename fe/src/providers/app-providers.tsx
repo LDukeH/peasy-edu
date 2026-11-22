@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { initMocks } from "@/mocks/init";
+import { writeCachedUser } from "@/lib/auth-cache";
 import { useAuthStore } from "@/stores/auth-store";
 
 const PUBLIC_ROUTES = [
@@ -13,7 +14,6 @@ const PUBLIC_ROUTES = [
   "/dich-vu-hoc-phi",
   "/ung-tuyen-gia-su",
   "/yeu-cau-tim-gia-su",
-  "/welcome",
 ];
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -35,7 +35,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      queryClient.clear();
+      writeCachedUser(null);
+      // Không dùng queryClient.clear() vì sẽ reset query /api/auth/me đang active về trạng thái pending (treo trang)
+      queryClient.removeQueries({
+        predicate: (q) => q.queryKey[0] !== "/api/auth/me",
+      });
+      queryClient.setQueryData(["/api/auth/me"], null);
       useAuthStore.getState().logout();
       const isPublic = PUBLIC_ROUTES.some((route) =>
         route === "/" ? pathname === "/" : pathname.startsWith(route),

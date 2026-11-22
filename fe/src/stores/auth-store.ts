@@ -10,19 +10,10 @@ interface AuthState {
   logout: () => void;
 }
 
-// Giả lập người dùng mặc định khi chạy dev để tiện kiểm thử phân quyền UI
-const DEFAULT_USER: UserProfile = {
-  id: "NV001",
-  name: "Lê Hoàng Duy",
-  phone: "0901234567",
-  email: "admin@giasu.edu.vn",
-  role: "CHU_TRUNG_TAM",
-};
-
 export const useAuthStore = create<AuthState>((set) => ({
-  user: DEFAULT_USER,
-  role: "CHU_TRUNG_TAM",
-  isAuthenticated: true,
+  user: null,
+  role: "KHACH",
+  isAuthenticated: false,
   setUser: (user) =>
     set({
       user,

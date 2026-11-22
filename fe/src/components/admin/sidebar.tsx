@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import type { UserDto } from "@/api/generated/model";
 import { Logo } from "@/components/ui/logo";
-import { initials } from "@/mocks/format";
-import { endSession } from "@/mocks/session";
-import type { Account } from "@/mocks/types";
+import { useSignOut } from "@/hooks/use-auth-session";
+import { initials, VAI_TRO_LABEL } from "@/lib/auth-labels";
 import { IconHistory, IconSliders, IconUser } from "./icons";
 
 interface Item {
@@ -27,16 +27,16 @@ const ITEMS: Item[] = [
   { href: null, label: "Nhật ký truy cập", icon: <IconHistory />, match: [] },
 ];
 
-export function AdminSidebar({ account }: { account: Account }) {
+export function AdminSidebar({ user }: { user: UserDto }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { signOut, isPending } = useSignOut();
 
   return (
     <aside className="flex flex-col gap-5 bg-sidebar px-3.5 pb-6 pt-7 lg:fixed lg:inset-y-0 lg:left-0 lg:w-[228px]">
       <Logo className="w-full" />
       <Divider />
       <div className="flex h-11 items-center rounded-lg bg-white/[0.09] p-3 text-sm font-semibold leading-5 text-white">
-        Demo · Quản trị viên
+        {VAI_TRO_LABEL[user.vaiTro]}
       </div>
       <Divider />
 
@@ -78,24 +78,22 @@ export function AdminSidebar({ account }: { account: Account }) {
       <div className="flex flex-col gap-3 border-t border-white/[0.18] px-2 pt-5">
         <div className="flex items-start gap-2.5">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/[0.09] text-xs font-semibold text-white">
-            {initials(account.fullName)}
+            {initials(user.hoTen)}
           </div>
           <div className="flex min-w-0 flex-col gap-1">
-            <p className="truncate text-sm font-semibold leading-5 text-white">{account.fullName}</p>
+            <p className="truncate text-sm font-semibold leading-5 text-white">{user.hoTen}</p>
             <p className="text-xs leading-[18px] text-white/70">
-              Quản trị viên · Tài khoản của tôi
+              {user.maDoiTuong ?? user.tenDangNhap} · Tài khoản của tôi
             </p>
           </div>
         </div>
         <button
           type="button"
-          onClick={() => {
-            endSession();
-            router.replace("/login");
-          }}
-          className="cursor-pointer rounded-lg border border-white/25 px-3 py-2 text-left text-xs font-semibold text-white hover:bg-white/10"
+          disabled={isPending}
+          onClick={signOut}
+          className="cursor-pointer rounded-lg border border-white/25 px-3 py-2 text-left text-xs font-semibold text-white hover:bg-white/10 disabled:opacity-60"
         >
-          Đăng xuất
+          {isPending ? "Đang đăng xuất…" : "Đăng xuất"}
         </button>
       </div>
     </aside>

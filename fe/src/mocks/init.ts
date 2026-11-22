@@ -7,7 +7,29 @@ let workerStartPromise: Promise<unknown> | null = null;
 
 export function initMocks(): Promise<unknown> {
   // SSR guard: Không khởi động MSW trên server
-  if (typeof window === "undefined" || !isMockingEnabled) {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
+
+  // Khi tắt mock, gỡ bỏ mockServiceWorker.js cũ nếu trình duyệt còn lưu từ phiên chạy mock trước
+  if (!isMockingEnabled) {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => {
+          registrations.forEach((reg) => {
+            const url =
+              reg.active?.scriptURL ??
+              reg.waiting?.scriptURL ??
+              reg.installing?.scriptURL ??
+              "";
+            if (url.includes("mockServiceWorker.js")) {
+              void reg.unregister();
+            }
+          });
+        })
+        .catch(() => {});
+    }
     return Promise.resolve();
   }
 

@@ -6,11 +6,15 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoPeasyEdu } from "@/components/common/logo";
+import { useAuthSession, useSignOut } from "@/hooks/use-auth-session";
+import { homeForRole } from "@/lib/auth-labels";
 import { cn } from "@/lib/utils";
 
 export function PublicNavbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const { user, isLoading } = useAuthSession();
+  const { signOut, isPending: signingOut } = useSignOut();
 
   // Khớp chính xác danh sách links trên header Figma (node 2236:7205)
   const navLinks = [
@@ -46,16 +50,42 @@ export function PublicNavbar() {
           })}
         </nav>
 
-        {/* Account actions: Đăng nhập & Tìm gia sư */}
+        {/* Account actions: Đăng nhập / Tài khoản & Tìm gia sư */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/login">
-            <Button
-              variant="outline"
-              className="h-10 px-4 font-semibold text-[#33465c] border-[#dce4eb] hover:bg-slate-50 rounded-lg"
-            >
-              Đăng nhập
-            </Button>
-          </Link>
+          {isLoading ? (
+            <div
+              aria-hidden="true"
+              className="h-10 w-28 animate-pulse rounded-lg bg-slate-100"
+            />
+          ) : user ? (
+            <>
+              <Link href={homeForRole(user.vaiTro)}>
+                <Button
+                  variant="outline"
+                  className="h-10 px-4 font-semibold text-[#33465c] border-[#dce4eb] hover:bg-slate-50 rounded-lg"
+                >
+                  {user.hoTen}
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                disabled={signingOut}
+                onClick={signOut}
+                className="h-10 px-3 text-sm font-medium text-[#52677d] hover:text-[#116f7c]"
+              >
+                {signingOut ? "Đang xuất…" : "Đăng xuất"}
+              </Button>
+            </>
+          ) : (
+            <Link href="/login">
+              <Button
+                variant="outline"
+                className="h-10 px-4 font-semibold text-[#33465c] border-[#dce4eb] hover:bg-slate-50 rounded-lg"
+              >
+                Đăng nhập
+              </Button>
+            </Link>
+          )}
           <Link href="/yeu-cau-tim-gia-su">
             <Button
               className="h-10 px-4 font-semibold text-white bg-[#116f7c] hover:bg-[#0e5c66] rounded-lg shadow-xs"
@@ -96,11 +126,35 @@ export function PublicNavbar() {
             </Link>
           ))}
           <div className="pt-2 border-t border-[#dce4eb] flex flex-col gap-2">
-            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c]">
-                Đăng nhập
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href={homeForRole(user.vaiTro)}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c]">
+                    {user.hoTen}
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  disabled={signingOut}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    void signOut();
+                  }}
+                  className="w-full text-[#52677d]"
+                >
+                  {signingOut ? "Đang xuất…" : "Đăng xuất"}
+                </Button>
+              </>
+            ) : (
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c]">
+                  Đăng nhập
+                </Button>
+              </Link>
+            )}
             <Link href="/yeu-cau-tim-gia-su" onClick={() => setIsMobileMenuOpen(false)}>
               <Button className="w-full bg-[#116f7c] hover:bg-[#0e5c66] text-white">
                 Tìm gia sư

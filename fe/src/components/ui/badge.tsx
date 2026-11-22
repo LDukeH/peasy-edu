@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { STATUS_LABEL, type AccountStatus } from "@/mocks/types";
+import type { TrangThaiTaiKhoan } from "@/api/generated/model";
+import { TRANG_THAI_TAI_KHOAN_LABEL } from "@/lib/auth-labels";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?:
@@ -44,18 +45,17 @@ export function Badge({
   );
 }
 
-const statusTones: Record<AccountStatus, string> = {
+const statusTones: Record<TrangThaiTaiKhoan, string> = {
   HOAT_DONG: "bg-brand-soft text-brand",
   BI_KHOA: "bg-danger-soft text-danger",
-  CHO_KICH_HOAT: "bg-warn-soft text-warn",
 };
 
-export function StatusBadge({ status }: { status: AccountStatus }) {
+export function StatusBadge({ status }: { status: TrangThaiTaiKhoan }) {
   return (
     <span
       className={`inline-flex rounded-md px-2.5 py-1.5 text-xs font-semibold leading-[18px] whitespace-nowrap ${statusTones[status]}`}
     >
-      {STATUS_LABEL[status]}
+      {TRANG_THAI_TAI_KHOAN_LABEL[status]}
     </span>
   );
 }

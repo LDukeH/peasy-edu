@@ -3,12 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/auth-store";
+import { useSignOut } from "@/hooks/use-auth-session";
 import { ROLE_LABELS, UserRole } from "@/types/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export function DashboardHeader() {
-  const { role, setRole, user } = useAuthStore();
+  const { role, setRole, user, isAuthenticated } = useAuthStore();
+  const { signOut, isPending } = useSignOut();
 
   return (
     <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between shrink-0 sticky top-0 z-40 shadow-xs">
@@ -58,6 +60,17 @@ export function DashboardHeader() {
             <p className="text-xs font-bold text-foreground leading-tight">{user?.name || "Người dùng"}</p>
             <p className="text-[11px] text-muted-foreground">{ROLE_LABELS[role]}</p>
           </div>
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isPending}
+              onClick={signOut}
+              className="text-xs text-muted-foreground"
+            >
+              {isPending ? "Đang xuất…" : "Đăng xuất"}
+            </Button>
+          )}
         </div>
       </div>
     </header>

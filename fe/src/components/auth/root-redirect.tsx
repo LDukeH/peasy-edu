@@ -2,16 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { homeFor, useMockSession } from "@/mocks/session";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { homeForRole } from "@/lib/auth-labels";
 
 export function RootRedirect() {
   const router = useRouter();
-  const { ready, account } = useMockSession();
+  const { ready, user } = useAuthSession();
 
   useEffect(() => {
     if (!ready) return;
-    router.replace(account ? homeFor(account.role) : "/login");
-  }, [ready, account, router]);
+    router.replace(user ? homeForRole(user.vaiTro) : "/login");
+  }, [ready, user, router]);
 
   return null;
 }
