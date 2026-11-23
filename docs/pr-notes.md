@@ -52,6 +52,8 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
   - `ngayUngTuyen` map từ `GiaSu.thoiDiemGhiNhanDongY` → nhớ điền khi seed ~15 gia sư và fallback sort `id desc` nếu `null`.
   - Các bảng `MonDay`, `LichRanh`, `HoSoNangLuc` đều có cột `ma String @unique` (không xuất ra DTO) → tự sinh mã duy nhất khi insert DB.
 - [ ] **Chốt trạng thái được phép sửa ở `PATCH /api/tutors/:id`** *(review PR #10)*: Xác định rõ gia sư ở trạng thái `NGUNG_HOP_TAC` / `BI_TU_CHOI` / `CHO_DUYET` có được sửa hồ sơ không.
+- [ ] **Edge case `khuVucNhanDay: []` khi đổi sang `ONLINE`** *(review PR #10)*: `UpdateTutorDto` kế thừa `@ArrayMinSize(1)` từ `ApplyTutorDto` nên gửi `khuVucNhanDay: []` khi đổi sang `ONLINE` sẽ bị `400` → điều chỉnh điều kiện `@ValidateIf` nếu muốn cho phép xóa mảng, hoặc thống nhất với FE không gửi trường này.
+- [ ] **Siết validate `format: 'date'`** *(review PR #10)*: `@IsISO8601({ strict: true })` cho `ngaySinh`, `ngayCap`, `ngayHetHan` đang nhận cả chuỗi có giờ (`2000-08-15T10:00:00Z`) → cân nhắc thêm `@Matches(/^\d{4}-\d{2}-\d{2}$/)` để khớp chặt chuẩn `date`.
 
 ---
 
