@@ -15,7 +15,19 @@ describe('TokenService', () => {
     const { accessToken, refreshToken } = await service.issue(7);
 
     await expect(service.verifyAccess(accessToken)).resolves.toBe(7);
-    await expect(service.verifyRefresh(refreshToken)).resolves.toBe(7);
+    await expect(service.verifyRefresh(refreshToken)).resolves.toEqual({
+      taiKhoanId: 7,
+      persistent: true,
+    });
+  });
+
+  it('lưu cờ persistent = false trong refresh token khi không ghi nhớ đăng nhập', async () => {
+    const { refreshToken } = await service.issue(7, false);
+
+    await expect(service.verifyRefresh(refreshToken)).resolves.toEqual({
+      taiKhoanId: 7,
+      persistent: false,
+    });
   });
 
   it('không cho dùng refresh token thay access token và ngược lại', async () => {

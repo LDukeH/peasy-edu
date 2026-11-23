@@ -1048,6 +1048,11 @@
             "type": "string",
             "maxLength": 72,
             "example": "MatKhau@123"
+          },
+          "ghiNho": {
+            "type": "boolean",
+            "description": "Ghi nhớ đăng nhập (mặc định true). Nếu false, cookie chỉ tồn tại trong phiên trình duyệt hiện tại.",
+            "default": true
           }
         },
         "required": [

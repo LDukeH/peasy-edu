@@ -22,6 +22,12 @@ import { type TokenPair, TokenService } from './token.service.js';
 export interface AuthResult {
   user: UserDto;
   tokens: TokenPair;
+  persistent: boolean;
+}
+
+export interface RefreshResult {
+  tokens: TokenPair;
+  persistent: boolean;
 }
 
 const PHIEN_KHONG_HOP_LE = 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn';
@@ -57,6 +63,7 @@ export class AuthService {
       throw new ForbiddenException('Tài khoản đã bị khóa');
     }
 
+    const persistent = dto.ghiNho !== false;
     const capNhat = await this.prisma.taiKhoan.update({
       where: { id: taiKhoan.id },
       data: { lanDangNhapCuoi: new Date() },
@@ -64,7 +71,8 @@ export class AuthService {
     });
     return {
       user: toUserDto(capNhat),
-      tokens: await this.tokens.issue(capNhat.id),
+      tokens: await this.tokens.issue(capNhat.id, persistent),
+      persistent,
     };
   }
 
@@ -78,7 +86,11 @@ export class AuthService {
         email: dto.email,
         vaiTro: VaiTro.PHU_HUYNH,
       });
-      return { user, tokens: await this.tokens.issue(user.id) };
+      return {
+        user,
+        tokens: await this.tokens.issue(user.id, true),
+        persistent: true,
+      };
     } catch (error) {
       if (error instanceof ConflictException) {
         throw new ConflictException('Số điện thoại đã được đăng ký');
@@ -87,22 +99,25 @@ export class AuthService {
     }
   }
 
-  async refresh(refreshToken: unknown): Promise<TokenPair> {
-    const taiKhoanId =
+  async refresh(refreshToken: unknown): Promise<RefreshResult> {
+    const verified =
       typeof refreshToken === 'string'
         ? await this.tokens.verifyRefresh(refreshToken)
         : null;
-    if (taiKhoanId === null) {
+    if (verified === null) {
       throw new UnauthorizedException(PHIEN_KHONG_HOP_LE);
     }
 
     const taiKhoan = await this.prisma.taiKhoan.findUnique({
-      where: { id: taiKhoanId },
+      where: { id: verified.taiKhoanId },
       select: { id: true, trangThai: true },
     });
     if (taiKhoan?.trangThai !== TrangThaiTaiKhoan.HOAT_DONG) {
       throw new UnauthorizedException(PHIEN_KHONG_HOP_LE);
     }
-    return this.tokens.issue(taiKhoan.id);
+    return {
+      tokens: await this.tokens.issue(taiKhoan.id, verified.persistent),
+      persistent: verified.persistent,
+    };
   }
 }

@@ -1,22 +1,25 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import { getAuthMeQueryKey, useAuthRegister } from "@/api/generated/peasyApi";
 import { BrandPanel } from "@/components/auth/brand-panel";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { extractApiError } from "@/lib/api-error";
+import { writeCachedUser } from "@/lib/auth-cache";
 import {
-  discardAccount,
-  registerAccount,
-  setAccountStatus,
-} from "@/mocks/db";
-import {
+  homeForRole,
   isValidEmail,
-  isValidPassword,
   isValidPhone,
-} from "@/mocks/format";
-import type { Account } from "@/mocks/types";
+  mapUserDtoToProfile,
+  normalizePhone,
+} from "@/lib/auth-labels";
+import { useAuthStore } from "@/stores/auth-store";
 
 type RegRole = "PHU_HUYNH" | "GIA_SU";
 
@@ -27,11 +30,15 @@ interface Errors {
   password?: string;
   confirm?: string;
   agree?: string;
+  form?: string;
 }
 
-const RESEND_SECONDS = 60;
-
 export default function RegisterPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { ready, user } = useAuthSession();
+  const registerMutation = useAuthRegister();
+
   const [role, setRole] = useState<RegRole>("PHU_HUYNH");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -40,66 +47,53 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
-  const [submitting, setSubmitting] = useState(false);
-
-  const [created, setCreated] = useState<Account | null>(null);
-  const [verified, setVerified] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
-  const [resent, setResent] = useState(false);
 
   useEffect(() => {
-    if (!created || verified || secondsLeft <= 0) return;
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [created, verified, secondsLeft]);
+    if (ready && user) {
+      router.replace(homeForRole(user.vaiTro));
+    }
+  }, [ready, user, router]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (role !== "PHU_HUYNH") return;
+
     const next: Errors = {};
     if (!fullName.trim()) next.fullName = "Vui lòng nhập họ và tên.";
     if (!isValidPhone(phone))
       next.phone = "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.";
-    if (!isValidEmail(email)) next.email = "Email chưa đúng định dạng.";
-    if (!isValidPassword(password))
-      next.password = "Tối thiểu 10 ký tự, có chữ và số.";
+    if (email.trim() && !isValidEmail(email))
+      next.email = "Email chưa đúng định dạng.";
+    if (password.length < 8 || password.length > 72)
+      next.password = "Mật khẩu phải từ 8 đến 72 ký tự.";
     if (confirm !== password) next.confirm = "Mật khẩu nhập lại chưa khớp.";
     if (!agree)
       next.agree = "Bạn cần đồng ý Điều khoản và Chính sách bảo mật.";
     setErrors(next);
     if (Object.keys(next).length) return;
 
-    setSubmitting(true);
-    const res = await registerAccount({ fullName, phone, email, password, role });
-    setSubmitting(false);
-    if (!res.ok) {
-      setErrors({ [res.field ?? "phone"]: res.error });
-      return;
+    try {
+      const createdUser = await registerMutation.mutateAsync({
+        data: {
+          hoTen: fullName.trim(),
+          soDienThoai: normalizePhone(phone),
+          matKhau: password,
+          email: email.trim() || undefined,
+        },
+      });
+      writeCachedUser(createdUser);
+      queryClient.setQueryData(getAuthMeQueryKey(), createdUser);
+      useAuthStore.getState().setUser(mapUserDtoToProfile(createdUser));
+      router.replace(homeForRole(createdUser.vaiTro));
+    } catch (err) {
+      const parsed = extractApiError(err, "Đăng ký thất bại. Vui lòng thử lại.");
+      if (parsed.statusCode === 409) {
+        setErrors({ phone: parsed.message });
+      } else {
+        setErrors({ form: parsed.message });
+      }
     }
-    setCreated(res.data);
-    setSecondsLeft(RESEND_SECONDS);
-    setResent(false);
-    setVerified(false);
   }
-
-  function changeEmail() {
-    if (created) discardAccount(created.id);
-    setCreated(null);
-    setVerified(false);
-  }
-
-  function resend() {
-    setSecondsLeft(RESEND_SECONDS);
-    setResent(true);
-  }
-
-  function simulateVerify() {
-    if (!created) return;
-    setAccountStatus(created.id, "HOAT_DONG");
-    setVerified(true);
-  }
-
-  const locked = created !== null;
-  const roleLabel = role === "PHU_HUYNH" ? "phụ huynh" : "gia sư";
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas lg:flex-row">
@@ -121,8 +115,8 @@ export default function RegisterPage() {
           dạy riêng.
         </InfoCard>
         <p className="text-xs leading-[18px] text-inverse-muted">
-          Tài khoản nhân sự do Quản trị viên cấp. Tài khoản học viên được liên
-          kết với gia đình.
+          Tài khoản nhân sự do Quản lý cấp. Tài khoản học viên được liên kết với
+          gia đình.
         </p>
       </BrandPanel>
 
@@ -150,13 +144,15 @@ export default function RegisterPage() {
                   type="button"
                   role="radio"
                   aria-checked={active}
-                  disabled={locked}
-                  onClick={() => setRole(value)}
-                  className={`rounded-lg px-4 py-[11px] text-sm font-semibold leading-5 ${
+                  onClick={() => {
+                    setRole(value);
+                    setErrors({});
+                  }}
+                  className={`cursor-pointer rounded-lg px-4 py-[11px] text-sm font-semibold leading-5 ${
                     active
                       ? "bg-brand text-white"
                       : "border border-line bg-white text-body"
-                  } ${locked ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+                  }`}
                 >
                   {active ? "●" : "○"} {label}
                 </button>
@@ -164,121 +160,101 @@ export default function RegisterPage() {
             })}
           </div>
 
-          <fieldset disabled={locked} className="flex flex-col gap-[22px] border-0 p-0">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field
-                label="Họ và tên *"
-                autoComplete="name"
-                placeholder="Trần Thu Hà"
-                value={fullName}
-                error={errors.fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-              <Field
-                label="Số điện thoại *"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="090 123 4567"
-                value={phone}
-                error={errors.phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
+          {role === "GIA_SU" ? (
+            <div className="flex flex-col gap-4 rounded-xl border border-line bg-white p-6">
+              <Notice title="Đăng ký dành cho Gia sư">
+                Gia sư vui lòng gửi hồ sơ ứng tuyển để trung tâm xác minh bằng
+                cấp và cấp tài khoản đăng nhập.
+              </Notice>
+              <div>
+                <Link
+                  href="/ung-tuyen-gia-su"
+                  className={buttonClasses("primary")}
+                >
+                  Đi tới trang Ứng tuyển Gia sư →
+                </Link>
+              </div>
             </div>
-            <Field
-              label="Email *"
-              type="email"
-              autoComplete="email"
-              placeholder="ha.tran@email.com"
-              value={email}
-              error={errors.email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field
-                label="Mật khẩu *"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                error={errors.password}
-                hint="Tối thiểu 10 ký tự, có chữ và số."
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <Field
-                label="Nhập lại mật khẩu *"
-                type="password"
-                autoComplete="new-password"
-                value={confirm}
-                error={errors.confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="flex cursor-pointer items-center gap-2 text-xs leading-[18px] text-body">
-                <input
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
-                  className="size-4 accent-brand"
-                />
-                Tôi đồng ý Điều khoản sử dụng và Chính sách bảo mật của PeasyEdu.
-              </label>
-              {errors.agree && (
-                <p role="alert" className="text-xs leading-[18px] text-danger-field">
-                  {errors.agree}
-                </p>
-              )}
-            </div>
-          </fieldset>
-
-          <div>
-            <Button type="submit" disabled={submitting || locked}>
-              {submitting ? "Đang tạo tài khoản…" : `Tạo tài khoản ${roleLabel}`}
-            </Button>
-          </div>
-
-          {created && (
+          ) : (
             <>
-              {verified ? (
-                <Notice tone="success" small title="✓ Đã xác minh email">
-                  Tài khoản {created.code} đã sẵn sàng.{" "}
-                  <Link href="/login" className="font-semibold underline">
-                    Đăng nhập ngay
-                  </Link>
-                </Notice>
-              ) : (
-                <>
-                  <Notice tone="success" small title="✓ Đã gửi email xác minh">
-                    Kiểm tra hộp thư {created.email} và xác minh trong 24 giờ để
-                    hoàn tất đăng ký. Kiểm tra cả mục thư rác.
-                  </Notice>
-                  <p className="text-xs leading-[18px] text-brand">
-                    {secondsLeft > 0 ? (
-                      <>Gửi lại email sau {secondsLeft} giây</>
-                    ) : (
-                      <button type="button" onClick={resend} className="cursor-pointer hover:underline">
-                        Gửi lại email
-                      </button>
-                    )}{" "}
-                    ·{" "}
-                    <button type="button" onClick={changeEmail} className="cursor-pointer hover:underline">
-                      Đổi địa chỉ email
-                    </button>
-                    {resent && <span className="text-text-muted"> · Đã gửi lại email.</span>}
+              {errors.form && <Notice tone="error">{errors.form}</Notice>}
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field
+                  label="Họ và tên *"
+                  autoComplete="name"
+                  placeholder="Trần Thu Hà"
+                  value={fullName}
+                  error={errors.fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+                <Field
+                  label="Số điện thoại *"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="090 123 4567"
+                  value={phone}
+                  error={errors.phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <Field
+                label="Email (không bắt buộc)"
+                type="email"
+                autoComplete="email"
+                placeholder="ha.tran@email.com"
+                value={email}
+                error={errors.email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field
+                  label="Mật khẩu *"
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  error={errors.password}
+                  hint="Từ 8 đến 72 ký tự."
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Field
+                  label="Nhập lại mật khẩu *"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirm}
+                  error={errors.confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="flex cursor-pointer items-center gap-2 text-xs leading-[18px] text-body">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                    className="size-4 accent-brand"
+                  />
+                  Tôi đồng ý Điều khoản sử dụng và Chính sách bảo mật của
+                  PeasyEdu.
+                </label>
+                {errors.agree && (
+                  <p
+                    role="alert"
+                    className="text-xs leading-[18px] text-danger-field"
+                  >
+                    {errors.agree}
                   </p>
-                  {role === "PHU_HUYNH" && (
-                    <p className="text-xs leading-[18px] text-text-muted">
-                      YC01024 được giữ lại và sẽ gắn với tài khoản sau xác minh.
-                    </p>
-                  )}
-                  <div className="rounded-lg border border-dashed border-line-strong p-3 text-xs leading-[18px] text-text-muted">
-                    Demo: chưa có email thật.{" "}
-                    <button type="button" onClick={simulateVerify} className="cursor-pointer font-semibold text-brand hover:underline">
-                      Mô phỏng bấm liên kết xác minh
-                    </button>
-                  </div>
-                </>
-              )}
+                )}
+              </div>
+
+              <div>
+                <Button type="submit" disabled={registerMutation.isPending}>
+                  {registerMutation.isPending
+                    ? "Đang tạo tài khoản…"
+                    : "Tạo tài khoản phụ huynh"}
+                </Button>
+              </div>
             </>
           )}
 

@@ -1,58 +1,79 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import { getAuthMeQueryKey, useAuthLogin } from "@/api/generated/peasyApi";
 import { BrandPanel, PhotoPlaceholder } from "@/components/auth/brand-panel";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
-import { authenticate, resetMockDb, useAccounts } from "@/mocks/db";
-import { formatPhone } from "@/mocks/format";
-import { DEMO_PASSWORD } from "@/mocks/seed";
-import { homeFor, startSession, useMockSession } from "@/mocks/session";
-import { ROLE_LABEL } from "@/mocks/types";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { extractApiError } from "@/lib/api-error";
+import { writeCachedUser } from "@/lib/auth-cache";
+import {
+  homeForRole,
+  mapUserDtoToProfile,
+  normalizePhone,
+} from "@/lib/auth-labels";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface Errors {
-  phone?: string;
+  username?: string;
   password?: string;
   form?: string;
 }
 
+function normalizeIdentifier(raw: string): string {
+  const trimmed = raw.trim();
+  // Nếu người dùng nhập số điện thoại có dấu cách (vd: "090 000 0003"), gom lại thành 10 chữ số
+  if (/^[\d\s.-]+$/.test(trimmed)) {
+    return normalizePhone(trimmed);
+  }
+  return trimmed;
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const { ready, account } = useMockSession();
-  const accounts = useAccounts();
+  const queryClient = useQueryClient();
+  const { ready, user } = useAuthSession();
+  const loginMutation = useAuthLogin();
 
-  const [phone, setPhone] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<Errors>({});
-  const [submitting, setSubmitting] = useState(false);
   const [info, setInfo] = useState("");
 
   useEffect(() => {
-    if (ready && account) router.replace(homeFor(account.role));
-  }, [ready, account, router]);
+    if (ready && user) {
+      router.replace(homeForRole(user.vaiTro));
+    }
+  }, [ready, user, router]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setInfo("");
     const next: Errors = {};
-    if (!phone.trim()) next.phone = "Vui lòng nhập số điện thoại.";
+    const tenDangNhap = normalizeIdentifier(username);
+    if (!tenDangNhap) next.username = "Vui lòng nhập tên đăng nhập hoặc số điện thoại.";
     if (!password) next.password = "Vui lòng nhập mật khẩu.";
     setErrors(next);
-    if (next.phone || next.password) return;
+    if (next.username || next.password) return;
 
-    setSubmitting(true);
-    const res = await authenticate(phone, password);
-    setSubmitting(false);
-    if (!res.ok) {
-      setErrors({ [res.field ?? "form"]: res.error });
-      return;
+    try {
+      const loggedInUser = await loginMutation.mutateAsync({
+        data: { tenDangNhap, matKhau: password, ghiNho: remember },
+      });
+      writeCachedUser(loggedInUser, { persistent: remember });
+      queryClient.setQueryData(getAuthMeQueryKey(), loggedInUser);
+      useAuthStore.getState().setUser(mapUserDtoToProfile(loggedInUser));
+      router.replace(homeForRole(loggedInUser.vaiTro));
+    } catch (err) {
+      const parsed = extractApiError(err, "Đăng nhập thất bại. Vui lòng thử lại.");
+      setErrors({ form: parsed.message });
     }
-    startSession(res.data.id, remember);
-    router.replace(homeFor(res.data.role));
   }
 
   return (
@@ -88,22 +109,20 @@ export default function LoginPage() {
             Chào mừng trở lại
           </h1>
           <p className="text-sm leading-[22px] text-text-muted">
-            Đăng nhập bằng tài khoản được cấp hoặc đã đăng ký. Không cần chọn
-            vai trò để thay đổi quyền.
+            Đăng nhập bằng tên đăng nhập được cấp hoặc số điện thoại đã đăng ký.
           </p>
 
           {errors.form && <Notice tone="error">{errors.form}</Notice>}
           {info && <Notice tone="info">{info}</Notice>}
 
           <Field
-            label="Số điện thoại * (tên đăng nhập)"
-            type="tel"
-            inputMode="tel"
+            label="Tên đăng nhập hoặc số điện thoại *"
+            type="text"
             autoComplete="username"
-            placeholder="090 123 4567"
-            value={phone}
-            error={errors.phone}
-            onChange={(e) => setPhone(e.target.value)}
+            placeholder="quanly01 hoặc 090 000 0003"
+            value={username}
+            error={errors.username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <Field
             label="Mật khẩu *"
@@ -137,8 +156,8 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? "Đang đăng nhập…" : "Đăng nhập →"}
+            <Button type="submit" disabled={loginMutation.isPending}>
+              {loginMutation.isPending ? "Đang đăng nhập…" : "Đăng nhập →"}
             </Button>
           </div>
 
@@ -152,43 +171,6 @@ export default function LoginPage() {
             Hỗ trợ đăng nhập: 028 3822 0123 · Không chia sẻ mật khẩu.
           </p>
         </form>
-
-        <details className="w-full max-w-[560px] rounded-lg border border-dashed border-line-strong bg-canvas p-4 text-xs leading-[18px] text-text-muted">
-          <summary className="cursor-pointer font-semibold text-body">
-            Tài khoản demo (chỉ để test, chưa nối backend)
-          </summary>
-          <p className="mt-2">
-            Mật khẩu chung: <code className="font-semibold">{DEMO_PASSWORD}</code>
-          </p>
-          <ul className="mt-2 flex flex-col gap-1">
-            {accounts.map((a) => (
-              <li key={a.id}>
-                <button
-                  type="button"
-                  className="cursor-pointer text-left hover:text-brand"
-                  onClick={() => {
-                    setPhone(formatPhone(a.phone));
-                    setPassword(a.password);
-                    setErrors({});
-                  }}
-                >
-                  {formatPhone(a.phone)} · {a.fullName} · {ROLE_LABEL[a.role]}
-                  {a.status !== "HOAT_DONG" && " (không đăng nhập được)"}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            className="mt-3 cursor-pointer text-brand hover:underline"
-            onClick={() => {
-              resetMockDb();
-              setInfo("Đã đặt lại dữ liệu demo.");
-            }}
-          >
-            Đặt lại dữ liệu demo
-          </button>
-        </details>
       </main>
     </div>
   );

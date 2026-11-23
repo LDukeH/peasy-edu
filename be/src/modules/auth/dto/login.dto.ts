@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
@@ -17,4 +23,13 @@ export class LoginDto {
   @IsNotEmpty()
   @MaxLength(72)
   matKhau: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Ghi nhớ đăng nhập (mặc định true). Nếu false, cookie chỉ tồn tại trong phiên trình duyệt hiện tại.',
+    default: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  ghiNho?: boolean;
 }

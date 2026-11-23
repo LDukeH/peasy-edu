@@ -16,16 +16,20 @@ const baseOptions = (): CookieOptions => ({
   secure: process.env.NODE_ENV === 'production',
 });
 
-export function setAuthCookies(res: Response, tokens: TokenPair): void {
+export function setAuthCookies(
+  res: Response,
+  tokens: TokenPair,
+  persistent = true,
+): void {
   res.cookie(ACCESS_COOKIE, tokens.accessToken, {
     ...baseOptions(),
     path: '/',
-    maxAge: ACCESS_TTL_SECONDS * 1000,
+    ...(persistent ? { maxAge: ACCESS_TTL_SECONDS * 1000 } : {}),
   });
   res.cookie(REFRESH_COOKIE, tokens.refreshToken, {
     ...baseOptions(),
     path: REFRESH_COOKIE_PATH,
-    maxAge: REFRESH_TTL_SECONDS * 1000,
+    ...(persistent ? { maxAge: REFRESH_TTL_SECONDS * 1000 } : {}),
   });
 }
 
