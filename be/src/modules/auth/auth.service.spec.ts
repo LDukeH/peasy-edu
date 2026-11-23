@@ -55,6 +55,8 @@ describe('AuthService', () => {
       const ketQua = await service.login(dto);
 
       expect(ketQua.tokens).toEqual(TOKENS);
+      expect(ketQua.persistent).toBe(true);
+      expect(tokens.issue).toHaveBeenCalledWith(1, true);
       expect(ketQua.user.hoTen).toBe('Nguyễn Văn An');
       expect(ketQua.user.maDoiTuong).toBe('PH00001');
       expect(ketQua.user).not.toHaveProperty('matKhauHash');
@@ -63,6 +65,16 @@ describe('AuthService', () => {
           data: { lanDangNhapCuoi: expect.any(Date) as Date },
         }),
       );
+    });
+
+    it('ghiNho = false → cấp phiên không lưu dài hạn', async () => {
+      prisma.taiKhoan.findUnique.mockResolvedValue(taiKhoanDayDu);
+      prisma.taiKhoan.update.mockResolvedValue(taiKhoanDayDu);
+
+      const ketQua = await service.login({ ...dto, ghiNho: false });
+
+      expect(ketQua.persistent).toBe(false);
+      expect(tokens.issue).toHaveBeenCalledWith(1, false);
     });
 
     it('sai mật khẩu → 401', async () => {
@@ -136,14 +148,21 @@ describe('AuthService', () => {
   });
 
   describe('refresh', () => {
-    it('token hợp lệ, tài khoản hoạt động → cấp cặp token mới', async () => {
-      tokens.verifyRefresh.mockResolvedValue(1);
+    it('token hợp lệ, tài khoản hoạt động → cấp cặp token mới và giữ cờ persistent', async () => {
+      tokens.verifyRefresh.mockResolvedValue({
+        taiKhoanId: 1,
+        persistent: false,
+      });
       prisma.taiKhoan.findUnique.mockResolvedValue({
         id: 1,
         trangThai: 'HOAT_DONG',
       });
 
-      await expect(service.refresh('refresh-cu')).resolves.toEqual(TOKENS);
+      await expect(service.refresh('refresh-cu')).resolves.toEqual({
+        tokens: TOKENS,
+        persistent: false,
+      });
+      expect(tokens.issue).toHaveBeenCalledWith(1, false);
     });
 
     it.each([undefined, 123, ''])('thiếu cookie (%s) → 401', async (cookie) => {
@@ -155,7 +174,10 @@ describe('AuthService', () => {
     });
 
     it('tài khoản đã khóa → 401, không cấp token', async () => {
-      tokens.verifyRefresh.mockResolvedValue(1);
+      tokens.verifyRefresh.mockResolvedValue({
+        taiKhoanId: 1,
+        persistent: true,
+      });
       prisma.taiKhoan.findUnique.mockResolvedValue({
         id: 1,
         trangThai: 'BI_KHOA',

@@ -86,8 +86,8 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<UserDto> {
-    const { user, tokens } = await this.auth.login(dto);
-    setAuthCookies(res, tokens);
+    const { user, tokens, persistent } = await this.auth.login(dto);
+    setAuthCookies(res, tokens, persistent);
     return user;
   }
 
@@ -119,8 +119,8 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<UserDto> {
-    const { user, tokens } = await this.auth.register(dto);
-    setAuthCookies(res, tokens);
+    const { user, tokens, persistent } = await this.auth.register(dto);
+    setAuthCookies(res, tokens, persistent);
     return user;
   }
 
@@ -143,7 +143,10 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     const cookies = req.cookies as Record<string, unknown> | undefined;
-    setAuthCookies(res, await this.auth.refresh(cookies?.[REFRESH_COOKIE]));
+    const { tokens, persistent } = await this.auth.refresh(
+      cookies?.[REFRESH_COOKIE],
+    );
+    setAuthCookies(res, tokens, persistent);
   }
 
   @Post('logout')

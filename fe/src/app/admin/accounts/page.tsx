@@ -1,9 +1,13 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 import { TrangThaiTaiKhoan, type UserDto } from "@/api/generated/model";
-import { useUsersFindAll } from "@/api/generated/peasyApi";
+import {
+  getUsersFindAllQueryKey,
+  usersFindAll,
+} from "@/api/generated/peasyApi";
 import {
   CreateAccountDialog,
   EditAccountDialog,
@@ -25,11 +29,47 @@ type Dialog =
   | { type: "result"; message?: string }
   | null;
 
+const ACCOUNTS_PAGE_SIZE = 100;
+
+async function fetchAllAccounts(signal?: AbortSignal): Promise<{
+  items: UserDto[];
+  total: number;
+}> {
+  const first = await usersFindAll(
+    { page: 1, pageSize: ACCOUNTS_PAGE_SIZE },
+    undefined,
+    signal,
+  );
+  const totalPages = Math.ceil(first.total / first.pageSize);
+  if (totalPages <= 1) {
+    return { items: first.items, total: first.total };
+  }
+
+  const rest = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) =>
+      usersFindAll(
+        { page: index + 2, pageSize: first.pageSize },
+        undefined,
+        signal,
+      ),
+    ),
+  );
+
+  const byId = new Map<number, UserDto>();
+  for (const item of first.items) byId.set(item.id, item);
+  for (const page of rest) {
+    for (const item of page.items) byId.set(item.id, item);
+  }
+
+  const items = Array.from(byId.values());
+  return { items, total: Math.max(first.total, items.length) };
+}
+
 export default function AccountsPage() {
   const { user: me } = useAuthSession();
-  const { data, isPending, isError, error } = useUsersFindAll({
-    page: 1,
-    pageSize: 50,
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: [...getUsersFindAllQueryKey(), "all"],
+    queryFn: ({ signal }) => fetchAllAccounts(signal),
   });
 
   const [dialog, setDialog] = useState<Dialog>(null);

@@ -64,9 +64,9 @@ export default function LoginPage() {
 
     try {
       const loggedInUser = await loginMutation.mutateAsync({
-        data: { tenDangNhap, matKhau: password },
+        data: { tenDangNhap, matKhau: password, ghiNho: remember },
       });
-      writeCachedUser(loggedInUser);
+      writeCachedUser(loggedInUser, { persistent: remember });
       queryClient.setQueryData(getAuthMeQueryKey(), loggedInUser);
       useAuthStore.getState().setUser(mapUserDtoToProfile(loggedInUser));
       router.replace(homeForRole(loggedInUser.vaiTro));

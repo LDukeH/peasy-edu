@@ -8,6 +8,11 @@ export interface TokenPair {
   refreshToken: string;
 }
 
+export interface RefreshTokenPayload {
+  taiKhoanId: number;
+  persistent: boolean;
+}
+
 /** Access và refresh dùng hai secret khác nhau nên không thể dùng thay cho nhau. */
 @Injectable()
 export class TokenService {
@@ -33,15 +38,16 @@ export class TokenService {
     }
   }
 
-  async issue(taiKhoanId: number): Promise<TokenPair> {
-    const payload = { sub: String(taiKhoanId) };
+  async issue(taiKhoanId: number, persistent = true): Promise<TokenPair> {
+    const accessPayload = { sub: String(taiKhoanId) };
+    const refreshPayload = { sub: String(taiKhoanId), rem: persistent };
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(payload, {
+      this.jwt.signAsync(accessPayload, {
         secret: this.accessSecret,
         expiresIn: ACCESS_TTL_SECONDS,
         algorithm: 'HS256',
       }),
-      this.jwt.signAsync(payload, {
+      this.jwt.signAsync(refreshPayload, {
         secret: this.refreshSecret,
         expiresIn: REFRESH_TTL_SECONDS,
         algorithm: 'HS256',
@@ -50,23 +56,40 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
-  verifyAccess(token: string): Promise<number | null> {
-    return this.verify(token, this.accessSecret);
+  async verifyAccess(token: string): Promise<number | null> {
+    const payload = await this.verify<{ sub: string }>(
+      token,
+      this.accessSecret,
+    );
+    return payload ? this.parseSub(payload.sub) : null;
   }
 
-  verifyRefresh(token: string): Promise<number | null> {
-    return this.verify(token, this.refreshSecret);
+  async verifyRefresh(token: string): Promise<RefreshTokenPayload | null> {
+    const payload = await this.verify<{ sub: string; rem?: boolean }>(
+      token,
+      this.refreshSecret,
+    );
+    if (!payload) return null;
+    const taiKhoanId = this.parseSub(payload.sub);
+    if (taiKhoanId === null) return null;
+    return { taiKhoanId, persistent: payload.rem !== false };
+  }
+
+  private parseSub(sub: string): number | null {
+    const taiKhoanId = Number(sub);
+    return Number.isInteger(taiKhoanId) && taiKhoanId > 0 ? taiKhoanId : null;
   }
 
   /** Token sai hoặc hết hạn → null để nơi gọi trả 401. */
-  private async verify(token: string, secret: string): Promise<number | null> {
+  private async verify<T extends object>(
+    token: string,
+    secret: string,
+  ): Promise<T | null> {
     try {
-      const { sub } = await this.jwt.verifyAsync<{ sub: string }>(token, {
+      return await this.jwt.verifyAsync<T>(token, {
         secret,
         algorithms: ['HS256'],
       });
-      const taiKhoanId = Number(sub);
-      return Number.isInteger(taiKhoanId) && taiKhoanId > 0 ? taiKhoanId : null;
     } catch {
       return null;
     }

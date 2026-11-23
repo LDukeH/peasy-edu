@@ -3,8 +3,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
+import { getAuthMeQueryKey } from "@/api/generated/peasyApi";
 import { initMocks } from "@/mocks/init";
-import { writeCachedUser } from "@/lib/auth-cache";
+import {
+  subscribeCrossTabAuthChange,
+  writeCachedUser,
+} from "@/lib/auth-cache";
 import { useAuthStore } from "@/stores/auth-store";
 
 const PUBLIC_ROUTES = [
@@ -34,13 +38,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const handleUnauthorized = () => {
-      writeCachedUser(null);
+    const clearClientSession = () => {
       // Không dùng queryClient.clear() vì sẽ reset query /api/auth/me đang active về trạng thái pending (treo trang)
       queryClient.removeQueries({
         predicate: (q) => q.queryKey[0] !== "/api/auth/me",
       });
-      queryClient.setQueryData(["/api/auth/me"], null);
+      queryClient.setQueryData(getAuthMeQueryKey(), null);
       useAuthStore.getState().logout();
       const isPublic = PUBLIC_ROUTES.some((route) =>
         route === "/" ? pathname === "/" : pathname.startsWith(route),
@@ -50,9 +53,24 @@ export function AppProviders({ children }: { children: ReactNode }) {
       }
     };
 
+    const handleUnauthorized = () => {
+      writeCachedUser(null);
+      clearClientSession();
+    };
+
+    const unsubscribeCrossTab = subscribeCrossTabAuthChange((kind) => {
+      if (kind === "logout") {
+        clearClientSession();
+      } else {
+        void queryClient.invalidateQueries({ queryKey: getAuthMeQueryKey() });
+      }
+    });
+
     window.addEventListener("auth:unauthorized", handleUnauthorized);
-    return () =>
+    return () => {
+      unsubscribeCrossTab();
       window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    };
   }, [pathname, queryClient, router]);
 
   // Hướng A: Không return null ở root AppProviders (tránh lỗi dropped segment khi bật partialPrefetching / cacheComponents)

@@ -3,9 +3,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
-import { useAuthLogout, useAuthMe } from "@/api/generated/peasyApi";
+import {
+  getAuthMeQueryKey,
+  useAuthLogout,
+  useAuthMe,
+} from "@/api/generated/peasyApi";
 import type { UserDto } from "@/api/generated/model";
 import {
+  broadcastAuthLogout,
   readCachedUser,
   subscribeCachedUser,
   writeCachedUser,
@@ -40,16 +45,19 @@ export function useAuthSession(): {
   const ready = !isPending || cachedUser !== null;
 
   useEffect(() => {
-    if (!isPending) {
-      if (resolvedUser) {
-        writeCachedUser(resolvedUser);
-        useAuthStore.getState().setUser(mapUserDtoToProfile(resolvedUser));
-      } else {
-        writeCachedUser(null);
-        useAuthStore.getState().logout();
+    if (isPending) {
+      if (cachedUser) {
+        useAuthStore.getState().setUser(mapUserDtoToProfile(cachedUser));
       }
-    } else if (cachedUser) {
-      useAuthStore.getState().setUser(mapUserDtoToProfile(cachedUser));
+      return;
+    }
+
+    if (resolvedUser) {
+      writeCachedUser(resolvedUser);
+      useAuthStore.getState().setUser(mapUserDtoToProfile(resolvedUser));
+    } else {
+      writeCachedUser(null);
+      useAuthStore.getState().logout();
     }
   }, [isPending, resolvedUser, cachedUser]);
 
@@ -73,10 +81,11 @@ export function useSignOut() {
       // Kể cả khi API lỗi vẫn dọn state client và quay về /login
     } finally {
       writeCachedUser(null);
+      broadcastAuthLogout();
       queryClient.removeQueries({
         predicate: (q) => q.queryKey[0] !== "/api/auth/me",
       });
-      queryClient.setQueryData(["/api/auth/me"], null);
+      queryClient.setQueryData(getAuthMeQueryKey(), null);
       useAuthStore.getState().logout();
       router.replace("/login");
     }
