@@ -1716,6 +1716,1473 @@
           "Tutors"
         ]
       }
+    },
+    "/api/parents": {
+      "post": {
+        "description": "Hồ sơ nội bộ, không tự tạo tài khoản. Server sinh PHxxxxx, ngày/người tạo và thời điểm đồng ý; chỉ ghi nhận khi có sự đồng ý thật từ người đại diện.",
+        "operationId": "parents_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Số điện thoại hoặc tên đăng nhập đã được sử dụng.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Tạo hồ sơ phụ huynh",
+        "tags": [
+          "Parents"
+        ]
+      },
+      "get": {
+        "description": "Tìm mã, tên, SĐT, email không phân biệt hoa thường; ngayTao desc rồi id desc.",
+        "operationId": "parents_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Trang, bắt đầu từ 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Số bản ghi mỗi trang",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã, họ tên, SĐT hoặc email",
+            "schema": {
+              "maxLength": 100,
+              "example": "An",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Danh sách phụ huynh",
+        "tags": [
+          "Parents"
+        ]
+      }
+    },
+    "/api/parents/me": {
+      "get": {
+        "description": "Tài khoản học viên tự đại diện không có hồ sơ PH trả 404; dùng danh sách học viên để xem bản thân.",
+        "operationId": "parents_findMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentDetailDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Hồ sơ phụ huynh của tài khoản hiện tại",
+        "tags": [
+          "Parents"
+        ]
+      }
+    },
+    "/api/parents/{id}": {
+      "get": {
+        "description": "PH chỉ xem hồ sơ mình. Không trả ghi chú nội bộ.",
+        "operationId": "parents_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Chi tiết phụ huynh",
+        "tags": [
+          "Parents"
+        ]
+      },
+      "patch": {
+        "description": "PH chỉ sửa hồ sơ mình. Đổi SĐT đồng bộ tên đăng nhập nếu có tài khoản và ghi lịch sử. Không sửa nguồn tiếp nhận, đồng thuận, tài khoản hoặc ghi chú nội bộ. Xóa địa chỉ khi còn ràng buộc học tại nhà trả 400.",
+        "operationId": "parents_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Số điện thoại hoặc tên đăng nhập đã được sử dụng.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Sửa hồ sơ phụ huynh",
+        "tags": [
+          "Parents"
+        ]
+      }
+    },
+    "/api/students": {
+      "post": {
+        "description": "PH thêm con phải chỉ định phuHuynhId sở hữu; không tự thêm hồ sơ tự đại diện. DIEU_PHOI có thể nhập người thành niên tự đại diện với quan hệ Bản thân, không có PH. Không cấp tài khoản qua API này. Dưới 18 tuổi cần PH và đồng thuận hợp lệ; ngày sinh không ở tương lai. Mã HVxxxxx do server sinh; các kiểm tra tuổi, đồng thuận và quan hệ thuộc task logic.",
+        "operationId": "students_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Tạo hồ sơ học viên",
+        "tags": [
+          "Students"
+        ]
+      },
+      "get": {
+        "description": "PH chỉ thấy con hoặc bản thân theo tài khoản; filter phuHuynhId không mở rộng quyền. Tìm mã, tên, SĐT, email không phân biệt hoa thường; id desc.",
+        "operationId": "students_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Trang, bắt đầu từ 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Số bản ghi mỗi trang",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm mã, họ tên, SĐT, email",
+            "schema": {
+              "maxLength": 100,
+              "example": "An",
+              "type": "string"
+            }
+          },
+          {
+            "name": "phuHuynhId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "capHoc",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CapHoc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Danh sách học viên",
+        "tags": [
+          "Students"
+        ]
+      }
+    },
+    "/api/students/{id}": {
+      "get": {
+        "description": "PH chỉ xem con hoặc học viên gắn tài khoản của chính mình.",
+        "operationId": "students_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Chi tiết học viên",
+        "tags": [
+          "Students"
+        ]
+      },
+      "patch": {
+        "description": "Không đổi ngày sinh, giới tính, quan hệ, người đại diện hoặc tài khoản. PH chỉ sửa con/bản thân. Thay đổi cấp/lớp, học lực, liên hệ và địa chỉ được ghi nhật ký ở task logic.",
+        "operationId": "students_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Sửa hồ sơ học viên",
+        "tags": [
+          "Students"
+        ]
+      }
+    },
+    "/api/requests/submit": {
+      "post": {
+        "description": "Hai nhánh PHU_HUYNH và BAN_THAN (từ đủ 18 tuổi). Tạo nguyên tử hồ sơ, tài khoản quyền PHU_HUYNH và YC MOI; không tự đăng nhập, không trả token/cookie. SĐT là tên đăng nhập. Trùng tài khoản hoặc hồ sơ PH trả 409, yêu cầu đăng nhập hoặc liên hệ trung tâm; không tự ghép theo SĐT. Mỗi YC một môn, 1–4 HV cùng người thanh toán và địa điểm; BAN_THAN chỉ một HV và không tạo PH giả. Kênh WEBSITE, server chọn NV DIEU_PHOI hoạt động có id nhỏ nhất; không có NV trả 409 và không tạo dở dữ liệu. Ghi thời điểm/đồng thuận PH; BAN_THAN ghi sự kiện đồng thuận vào NhatKyThayDoi hiện có. Các hành vi tạo/tuổi/đồng thuận/phân công và giới hạn tần suất thuộc task logic sau.",
+        "operationId": "requests_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitRequestResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ. Nhu cầu: môn phải tồn tại, đang dùng và áp dụng đúng cấp (tiểu học chỉ nhóm năng khiếu/kỹ năng); địa chỉ bắt buộc khi tại nhà; kết thúc sau bắt đầu cùng ngày, khung giờ không chồng nhau. Quan hệ người thanh toán/học viên và tuổi/đồng thuận phải hợp lệ. Các kiểm tra cần dữ liệu do task logic thực hiện.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Trùng SĐT/tài khoản/hồ sơ PH, không có NV tiếp nhận, nguồn/trạng thái hiện tại không cho phép thao tác hoặc chuyển trạng thái không hợp lệ (kể cả lặp cùng trạng thái).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Gửi form quá nhiều lần, vui lòng chờ; giới hạn thực thi ở task logic sau.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gửi yêu cầu tìm gia sư lần đầu (công khai)",
+        "tags": [
+          "Requests"
+        ]
+      }
+    },
+    "/api/requests": {
+      "post": {
+        "description": "Người thanh toán trỏ đúng một PH hoặc HV tự đại diện; tất cả 1–4 hocVienIds không trùng, cùng người thanh toán. Tự đại diện chỉ chọn chính mình. PH chỉ dùng hồ sơ sở hữu; gửi NV/kênh tiếp nhận trả 403. PH được server gán kênh WEBSITE và NV DIEU_PHOI hoạt động id nhỏ nhất; không có NV trả 409. NV nhập hộ phải ghi kênh, có thể chọn NV hợp lệ hoặc mặc định chính mình. Server sinh YCxxxxx, ngày tiếp nhận và trạng thái MOI. Không tự cấp tài khoản; bảo đảm NguoiThanhToan đã được tạo ở task logic.",
+        "operationId": "requests_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO không hợp lệ; môn ngừng sử dụng/không áp dụng đúng cấp, quan hệ người thanh toán/học viên hoặc NV phụ trách không hợp lệ; địa chỉ tại nhà hoặc khung giờ không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Trùng SĐT/tài khoản/hồ sơ PH, không có NV tiếp nhận, nguồn/trạng thái hiện tại không cho phép thao tác hoặc chuyển trạng thái không hợp lệ (kể cả lặp cùng trạng thái).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Tạo yêu cầu từ hồ sơ có sẵn",
+        "tags": [
+          "Requests"
+        ]
+      },
+      "get": {
+        "description": "PH chỉ thấy YC thuộc người thanh toán của mình; query ID không mở rộng quyền. Filter dùng đủ 7 trạng thái Prisma; tìm mã không phân biệt hoa thường. Sắp ngayTiepNhan desc rồi id desc.",
+        "operationId": "requests_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Trang, bắt đầu từ 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Số bản ghi mỗi trang",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã yêu cầu, không phân biệt hoa thường",
+            "schema": {
+              "maxLength": 100,
+              "example": "YC00001",
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrangThaiYeuCau"
+            }
+          },
+          {
+            "name": "monHocId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nguoiThanhToanId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nhanVienPhuTrachId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "example": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tham số lọc hoặc phân trang không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Danh sách yêu cầu theo trạng thái và bộ lọc",
+        "tags": [
+          "Requests"
+        ]
+      }
+    },
+    "/api/requests/{id}": {
+      "get": {
+        "description": "PH chỉ xem YC sở hữu; trả nhu cầu, ID học viên và người thanh toán, không lộ thông tin tài khoản.",
+        "operationId": "requests_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID đường dẫn không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Chi tiết yêu cầu tìm gia sư",
+        "tags": [
+          "Requests"
+        ]
+      },
+      "patch": {
+        "description": "Chỉ MOI, DA_TU_VAN, DANG_TIM_GS; trạng thái khác trả 409. Body nhuCau lồng, từng trường optional. Không đổi người thanh toán, học viên, kênh, mã, ngày tiếp nhận hoặc trạng thái. Kiểm tra sau merge: TAI_NHA phải có địa chỉ hợp lệ kể cả địa chỉ cũ; không bắt gửi lại khi PATCH. Đổi NV ghi nhật ký.",
+        "operationId": "requests_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu DTO, query hoặc ID không hợp lệ. Nhu cầu: môn phải tồn tại, đang dùng và áp dụng đúng cấp (tiểu học chỉ nhóm năng khiếu/kỹ năng); địa chỉ bắt buộc khi tại nhà; kết thúc sau bắt đầu cùng ngày, khung giờ không chồng nhau. Quan hệ người thanh toán/học viên và tuổi/đồng thuận phải hợp lệ. Các kiểm tra cần dữ liệu do task logic thực hiện.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Trùng SĐT/tài khoản/hồ sơ PH, không có NV tiếp nhận, nguồn/trạng thái hiện tại không cho phép thao tác hoặc chuyển trạng thái không hợp lệ (kể cả lặp cùng trạng thái).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Sửa nhu cầu hoặc nhân viên phụ trách",
+        "tags": [
+          "Requests"
+        ]
+      }
+    },
+    "/api/requests/{id}/status": {
+      "patch": {
+        "description": "DIEU_PHOI: MOI → DA_TU_VAN → DANG_TIM_GS; DIEU_PHOI hoặc PH sở hữu: từ bất kỳ trạng thái nào trong ba trạng thái đầu → HUY, bắt buộc lý do. PH chuyển tiến trả 403. Đích chỉ DA_TU_VAN/DANG_TIM_GS/HUY; enum sai hoặc lý do không hợp lệ trả 400. Nhảy bước, chuyển ngược, lặp chính trạng thái, mở lại HUY hoặc nguồn DA_DE_XUAT/DANG_HOC_THU/THANH_CONG/HUY trả 409. Chuyển giai đoạn ghép/học thử thuộc task sau. Auth/quyền sở hữu kiểm tra trước chuyển trạng thái; thay đổi được ghi nhật ký ở task logic.",
+        "operationId": "requests_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ID số nguyên dương",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRequestStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID hoặc trạng thái đích không hợp lệ; HUY thiếu lý do, lý do chỉ có khoảng trắng/quá 500 ký tự, hoặc gửi lý do ở đích khác HUY.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc access token không hợp lệ/hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc không có quyền sở hữu; PH trên route có CuaMinh nhận 403 cả khi ID không tồn tại để tránh dò dữ liệu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bản ghi hoặc ID tham chiếu không tồn tại khi được phép tra cứu; PH có CuaMinh có thể nhận 403 trước handler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Trùng SĐT/tài khoản/hồ sơ PH, không có NV tiếp nhận, nguồn/trạng thái hiện tại không cho phép thao tác hoặc chuyển trạng thái không hợp lệ (kể cả lặp cùng trạng thái).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Chưa cài đặt – logic thuộc task BE Phụ huynh, Học viên và Yêu cầu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Cập nhật trạng thái yêu cầu giai đoạn đầu",
+        "tags": [
+          "Requests"
+        ]
+      }
     }
   },
   "info": {
@@ -3335,6 +4802,1606 @@
         },
         "required": [
           "ketQua"
+        ]
+      },
+      "CreateParentDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Văn An"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          },
+          "dongYXuLyDuLieu": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "example": true,
+            "description": "Phải có sự đồng ý của người đại diện; server ghi thời điểm."
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "zalo": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 50,
+            "example": "0901234567"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "Phường Bình Thạnh, TP.HCM"
+          },
+          "kenhTiepNhan": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Zalo"
+          },
+          "ghiChu": {
+            "type": "string",
+            "maxLength": 2000,
+            "example": "Ưu tiên liên hệ buổi tối",
+            "description": "Ghi chú nội bộ; không trả trong response chung."
+          }
+        },
+        "required": [
+          "hoTen",
+          "soDienThoai",
+          "dongYXuLyDuLieu"
+        ]
+      },
+      "ParentDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "example": "PH00001"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Văn An"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "example": "0901234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "zalo": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "ngayTao": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-25T03:00:00.000Z"
+          },
+          "kenhTiepNhan": {
+            "type": "string",
+            "nullable": true,
+            "example": "Zalo"
+          },
+          "dongYXuLyDuLieu": {
+            "type": "boolean",
+            "nullable": true,
+            "example": true
+          },
+          "thoiDiemGhiNhanDongY": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "example": null
+          },
+          "nguoiTaoId": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          },
+          "taiKhoanId": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          },
+          "nguoiThanhToanId": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "hoTen",
+          "soDienThoai",
+          "email",
+          "zalo",
+          "diaChi",
+          "ngayTao",
+          "kenhTiepNhan",
+          "dongYXuLyDuLieu",
+          "thoiDiemGhiNhanDongY",
+          "nguoiTaoId",
+          "taiKhoanId",
+          "nguoiThanhToanId"
+        ]
+      },
+      "ParentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "example": "PH00001"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Văn An"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "example": "0901234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "zalo": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "ngayTao": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-25T03:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "hoTen",
+          "soDienThoai",
+          "email",
+          "zalo",
+          "diaChi",
+          "ngayTao"
+        ]
+      },
+      "ParentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParentDto"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "example": 10
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "UpdateParentDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Văn An"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "zalo": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 50,
+            "example": "0901234567"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "Phường Bình Thạnh, TP.HCM"
+          }
+        }
+      },
+      "CreateStudentDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Minh An"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "format": "date",
+            "example": "2012-08-15"
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "8",
+            "description": "DAI_HOC: Năm 2; NGUOI_DI_LAM: Không áp dụng."
+          },
+          "quanHeVoiNguoiDaiDien": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "Con"
+          },
+          "phuHuynhId": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1,
+            "description": "Bắt buộc nếu dưới 18 tuổi; PH chỉ thêm con thuộc hồ sơ mình."
+          },
+          "gioiTinh": {
+            "example": "NAM",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GioiTinh"
+              }
+            ]
+          },
+          "truong": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "THCS Nguyễn Du"
+          },
+          "hocLuc": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Cần củng cố kiến thức cơ bản"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "TP.HCM"
+          }
+        },
+        "required": [
+          "hoTen",
+          "ngaySinh",
+          "capHoc",
+          "khoiLop",
+          "quanHeVoiNguoiDaiDien"
+        ]
+      },
+      "StudentDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "example": "HV00001"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Minh An"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "format": "date",
+            "example": "2012-08-15"
+          },
+          "gioiTinh": {
+            "nullable": true,
+            "enum": [
+              "NAM",
+              "NU",
+              null
+            ],
+            "type": "string",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GioiTinh"
+              },
+              {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ],
+            "example": null,
+            "description": "NAM, NU hoặc null nếu chưa ghi nhận giới tính."
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "example": "8"
+          },
+          "phuHuynhId": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1
+          },
+          "quanHeVoiNguoiDaiDien": {
+            "type": "string",
+            "example": "Con"
+          },
+          "truong": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "hocLuc": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "taiKhoanId": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          },
+          "nguoiThanhToanId": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "hoTen",
+          "ngaySinh",
+          "gioiTinh",
+          "capHoc",
+          "khoiLop",
+          "phuHuynhId",
+          "quanHeVoiNguoiDaiDien",
+          "truong",
+          "hocLuc",
+          "soDienThoai",
+          "email",
+          "diaChi",
+          "taiKhoanId",
+          "nguoiThanhToanId"
+        ]
+      },
+      "StudentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "example": "HV00001"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Minh An"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "format": "date",
+            "example": "2012-08-15"
+          },
+          "gioiTinh": {
+            "nullable": true,
+            "enum": [
+              "NAM",
+              "NU",
+              null
+            ],
+            "type": "string",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GioiTinh"
+              },
+              {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ],
+            "example": null,
+            "description": "NAM, NU hoặc null nếu chưa ghi nhận giới tính."
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "example": "8"
+          },
+          "phuHuynhId": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1
+          },
+          "quanHeVoiNguoiDaiDien": {
+            "type": "string",
+            "example": "Con"
+          },
+          "truong": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "hoTen",
+          "ngaySinh",
+          "gioiTinh",
+          "capHoc",
+          "khoiLop",
+          "phuHuynhId",
+          "quanHeVoiNguoiDaiDien",
+          "truong"
+        ]
+      },
+      "StudentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentDto"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "example": 10
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "UpdateStudentDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Minh An"
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "8",
+            "description": "DAI_HOC: Năm 2; NGUOI_DI_LAM: Không áp dụng."
+          },
+          "truong": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "THCS Nguyễn Du"
+          },
+          "hocLuc": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Cần củng cố kiến thức cơ bản"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "TP.HCM"
+          }
+        }
+      },
+      "SubmitParentProfileDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Văn An"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          },
+          "dongYXuLyDuLieu": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "example": true,
+            "description": "Phải có sự đồng ý của người đại diện; server ghi thời điểm."
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "zalo": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 50,
+            "example": "0901234567"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "Phường Bình Thạnh, TP.HCM"
+          }
+        },
+        "required": [
+          "hoTen",
+          "soDienThoai",
+          "dongYXuLyDuLieu"
+        ]
+      },
+      "SubmitStudentProfileDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Minh An"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "format": "date",
+            "example": "2012-08-15"
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "8",
+            "description": "DAI_HOC: Năm 2; NGUOI_DI_LAM: Không áp dụng."
+          },
+          "quanHeVoiNguoiDaiDien": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "Con"
+          },
+          "gioiTinh": {
+            "example": "NAM",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GioiTinh"
+              }
+            ]
+          },
+          "truong": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "THCS Nguyễn Du"
+          },
+          "hocLuc": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Cần củng cố kiến thức cơ bản"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "TP.HCM"
+          }
+        },
+        "required": [
+          "hoTen",
+          "ngaySinh",
+          "capHoc",
+          "khoiLop",
+          "quanHeVoiNguoiDaiDien"
+        ]
+      },
+      "SubmitParentRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "loaiDangKy": {
+            "enum": [
+              "PHU_HUYNH"
+            ],
+            "type": "string",
+            "example": "PHU_HUYNH"
+          },
+          "matKhau": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72,
+            "pattern": "\\S",
+            "writeOnly": true,
+            "example": "MatKhau@123"
+          },
+          "phuHuynh": {
+            "$ref": "#/components/schemas/SubmitParentProfileDto"
+          },
+          "hocVien": {
+            "minItems": 1,
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmitStudentProfileDto"
+            }
+          }
+        },
+        "description": "Chỉ nhận thuộc tính của đúng nhánh đăng ký.",
+        "additionalProperties": false,
+        "required": [
+          "loaiDangKy",
+          "matKhau",
+          "phuHuynh",
+          "hocVien"
+        ]
+      },
+      "SubmitSelfProfileDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Nguyễn Minh An"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "format": "date",
+            "example": "2012-08-15"
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "8",
+            "description": "DAI_HOC: Năm 2; NGUOI_DI_LAM: Không áp dụng."
+          },
+          "gioiTinh": {
+            "example": "NAM",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GioiTinh"
+              }
+            ]
+          },
+          "truong": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "THCS Nguyễn Du"
+          },
+          "hocLuc": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Cần củng cố kiến thức cơ bản"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 254,
+            "format": "email",
+            "example": "an@example.com"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "TP.HCM"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^0\\d{9}$",
+            "example": "0901234567"
+          }
+        },
+        "required": [
+          "hoTen",
+          "ngaySinh",
+          "capHoc",
+          "khoiLop",
+          "soDienThoai"
+        ]
+      },
+      "SubmitSelfRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "loaiDangKy": {
+            "enum": [
+              "BAN_THAN"
+            ],
+            "type": "string",
+            "example": "BAN_THAN"
+          },
+          "matKhau": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72,
+            "pattern": "\\S",
+            "writeOnly": true,
+            "example": "MatKhau@123"
+          },
+          "banThan": {
+            "description": "Từ đủ 18 tuổi; server gán quan hệ Bản thân, không tạo PH giả.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SubmitSelfProfileDto"
+              }
+            ]
+          },
+          "dongYXuLyDuLieu": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "example": true,
+            "description": "Server ghi sự kiện và thời điểm đồng ý trong nhật ký."
+          }
+        },
+        "description": "Chỉ nhận thuộc tính của đúng nhánh đăng ký.",
+        "additionalProperties": false,
+        "required": [
+          "loaiDangKy",
+          "matKhau",
+          "banThan",
+          "dongYXuLyDuLieu"
+        ]
+      },
+      "HinhThucHoc": {
+        "type": "string",
+        "enum": [
+          "TAI_NHA",
+          "ONLINE"
+        ]
+      },
+      "KhungGioMongMuonDto": {
+        "type": "object",
+        "properties": {
+          "thu": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "example": 2,
+            "description": "ISO: 1 = Thứ Hai, 7 = Chủ nhật"
+          },
+          "gioBatDau": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "example": "18:00"
+          },
+          "gioKetThuc": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "example": "19:30",
+            "description": "Phải sau giờ bắt đầu cùng ngày; logic tương lai kiểm tra."
+          }
+        },
+        "required": [
+          "thu",
+          "gioBatDau",
+          "gioKetThuc"
+        ]
+      },
+      "RequestNeedsDto": {
+        "type": "object",
+        "properties": {
+          "monHocId": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "8"
+          },
+          "mucTieu": {
+            "type": "string",
+            "maxLength": 2000,
+            "pattern": "\\S",
+            "example": "Củng cố kiến thức"
+          },
+          "hinhThuc": {
+            "example": "ONLINE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HinhThucHoc"
+              }
+            ]
+          },
+          "soBuoiMoiTuan": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "example": 2
+          },
+          "thoiLuongPhut": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440,
+            "example": 90
+          },
+          "khungGioMongMuon": {
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Các lựa chọn lịch; không bắt buộc số khung bằng số buổi/tuần.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KhungGioMongMuonDto"
+            }
+          },
+          "hocLucHienTai": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Cần ôn kiến thức lớp 7"
+          },
+          "tieuChiGiaSu": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Kiên nhẫn, có kinh nghiệm THCS"
+          },
+          "nganSachMoiBuoi": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 2147483647,
+            "example": 200000,
+            "description": "VND/buổi"
+          },
+          "ngayMuonBatDau": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "format": "date",
+            "example": "2026-12-01"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "TP.HCM",
+            "description": "Bắt buộc có nội dung khi hinhThuc=TAI_NHA."
+          }
+        },
+        "required": [
+          "monHocId",
+          "capHoc",
+          "khoiLop",
+          "mucTieu",
+          "hinhThuc",
+          "soBuoiMoiTuan",
+          "thoiLuongPhut",
+          "khungGioMongMuon"
+        ]
+      },
+      "SubmitRequestDto": {
+        "type": "object",
+        "properties": {
+          "dangKy": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SubmitParentRegistrationDto"
+              },
+              {
+                "$ref": "#/components/schemas/SubmitSelfRegistrationDto"
+              }
+            ],
+            "discriminator": {
+              "propertyName": "loaiDangKy",
+              "mapping": {
+                "PHU_HUYNH": "#/components/schemas/SubmitParentRegistrationDto",
+                "BAN_THAN": "#/components/schemas/SubmitSelfRegistrationDto"
+              }
+            }
+          },
+          "nhuCau": {
+            "$ref": "#/components/schemas/RequestNeedsDto"
+          }
+        },
+        "required": [
+          "dangKy",
+          "nhuCau"
+        ]
+      },
+      "LoaiDangKyYeuCau": {
+        "type": "string",
+        "enum": [
+          "PHU_HUYNH",
+          "BAN_THAN"
+        ]
+      },
+      "SubmitRequestResultDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string",
+            "example": "YC00001"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "MOI"
+            ],
+            "example": "MOI"
+          },
+          "ngayTiepNhan": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-25T03:00:00.000Z"
+          },
+          "tenDangNhap": {
+            "type": "string",
+            "example": "0901234567",
+            "description": "Tên đăng nhập bằng SĐT; không tự đăng nhập sau submit."
+          },
+          "loaiDangKy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoaiDangKyYeuCau"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ma",
+          "trangThai",
+          "ngayTiepNhan",
+          "tenDangNhap",
+          "loaiDangKy"
+        ]
+      },
+      "CreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "nguoiThanhToanId": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1,
+            "description": "Đúng một PH hoặc HV tự đại diện; PH chỉ dùng người thanh toán của mình."
+          },
+          "hocVienIds": {
+            "type": "array",
+            "minimum": 1,
+            "uniqueItems": true,
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": [
+              1
+            ],
+            "description": "Cùng người thanh toán; tự đại diện chỉ chọn bản thân."
+          },
+          "nhuCau": {
+            "$ref": "#/components/schemas/RequestNeedsDto"
+          },
+          "kenhTiepNhan": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "\\S",
+            "example": "Zalo",
+            "description": "DIEU_PHOI bắt buộc ghi kênh; PH gửi trường này trả 403."
+          },
+          "nhanVienPhuTrachId": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1,
+            "description": "Chỉ DIEU_PHOI được chỉ định; PH gửi trả 403. Bỏ qua: NV mặc định chính mình, PH tự gán NV."
+          }
+        },
+        "required": [
+          "nguoiThanhToanId",
+          "hocVienIds",
+          "nhuCau"
+        ]
+      },
+      "TrangThaiYeuCau": {
+        "type": "string",
+        "enum": [
+          "MOI",
+          "DA_TU_VAN",
+          "DANG_TIM_GS",
+          "DA_DE_XUAT",
+          "DANG_HOC_THU",
+          "THANH_CONG",
+          "HUY"
+        ]
+      },
+      "RequestDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "example": "YC00001"
+          },
+          "nguoiThanhToanId": {
+            "type": "integer",
+            "example": 1
+          },
+          "monHocId": {
+            "type": "integer",
+            "example": 1
+          },
+          "nhanVienPhuTrachId": {
+            "type": "integer",
+            "example": 1
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "example": "8"
+          },
+          "mucTieu": {
+            "type": "string",
+            "example": "Củng cố kiến thức"
+          },
+          "hinhThuc": {
+            "example": "ONLINE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HinhThucHoc"
+              }
+            ]
+          },
+          "trangThai": {
+            "example": "MOI",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiYeuCau"
+              }
+            ]
+          },
+          "ngayTiepNhan": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-25T03:00:00.000Z"
+          },
+          "hocVienIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "example": [
+              1
+            ]
+          },
+          "kenhTiepNhan": {
+            "type": "string",
+            "example": "WEBSITE"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "soBuoiMoiTuan": {
+            "type": "integer",
+            "example": 2
+          },
+          "thoiLuongPhut": {
+            "type": "integer",
+            "example": 90
+          },
+          "khungGioMongMuon": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KhungGioMongMuonDto"
+            }
+          },
+          "hocLucHienTai": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "tieuChiGiaSu": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "lyDoHuy": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "nganSachMoiBuoi": {
+            "type": "integer",
+            "nullable": true,
+            "example": 200000
+          },
+          "ngayMuonBatDau": {
+            "type": "string",
+            "nullable": true,
+            "format": "date",
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "nguoiThanhToanId",
+          "monHocId",
+          "nhanVienPhuTrachId",
+          "capHoc",
+          "khoiLop",
+          "mucTieu",
+          "hinhThuc",
+          "trangThai",
+          "ngayTiepNhan",
+          "hocVienIds",
+          "kenhTiepNhan",
+          "diaChi",
+          "soBuoiMoiTuan",
+          "thoiLuongPhut",
+          "khungGioMongMuon",
+          "hocLucHienTai",
+          "tieuChiGiaSu",
+          "lyDoHuy",
+          "nganSachMoiBuoi",
+          "ngayMuonBatDau"
+        ]
+      },
+      "RequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "ma": {
+            "type": "string",
+            "example": "YC00001"
+          },
+          "nguoiThanhToanId": {
+            "type": "integer",
+            "example": 1
+          },
+          "monHocId": {
+            "type": "integer",
+            "example": 1
+          },
+          "nhanVienPhuTrachId": {
+            "type": "integer",
+            "example": 1
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "example": "8"
+          },
+          "mucTieu": {
+            "type": "string",
+            "example": "Củng cố kiến thức"
+          },
+          "hinhThuc": {
+            "example": "ONLINE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HinhThucHoc"
+              }
+            ]
+          },
+          "trangThai": {
+            "example": "MOI",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiYeuCau"
+              }
+            ]
+          },
+          "ngayTiepNhan": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-25T03:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "nguoiThanhToanId",
+          "monHocId",
+          "nhanVienPhuTrachId",
+          "capHoc",
+          "khoiLop",
+          "mucTieu",
+          "hinhThuc",
+          "trangThai",
+          "ngayTiepNhan"
+        ]
+      },
+      "RequestListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestDto"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "example": 10
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "UpdateRequestNeedsDto": {
+        "type": "object",
+        "properties": {
+          "monHocId": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "capHoc": {
+            "example": "THCS",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapHoc"
+              }
+            ]
+          },
+          "khoiLop": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "\\S",
+            "example": "8"
+          },
+          "mucTieu": {
+            "type": "string",
+            "maxLength": 2000,
+            "pattern": "\\S",
+            "example": "Củng cố kiến thức"
+          },
+          "hinhThuc": {
+            "example": "ONLINE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HinhThucHoc"
+              }
+            ]
+          },
+          "soBuoiMoiTuan": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "example": 2
+          },
+          "thoiLuongPhut": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440,
+            "example": 90
+          },
+          "khungGioMongMuon": {
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Các lựa chọn lịch; không bắt buộc số khung bằng số buổi/tuần.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KhungGioMongMuonDto"
+            }
+          },
+          "hocLucHienTai": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Cần ôn kiến thức lớp 7"
+          },
+          "tieuChiGiaSu": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "example": "Kiên nhẫn, có kinh nghiệm THCS"
+          },
+          "nganSachMoiBuoi": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 2147483647,
+            "example": 200000,
+            "description": "VND/buổi"
+          },
+          "ngayMuonBatDau": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "format": "date",
+            "example": "2026-12-01"
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "pattern": "\\S",
+            "example": "TP.HCM",
+            "description": "Kiểm tra địa chỉ trên dữ liệu sau merge; null xóa nếu ràng buộc cho phép."
+          }
+        }
+      },
+      "UpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "nhuCau": {
+            "$ref": "#/components/schemas/UpdateRequestNeedsDto"
+          },
+          "nhanVienPhuTrachId": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          }
+        }
+      },
+      "TrangThaiCapNhatYeuCau": {
+        "type": "string",
+        "enum": [
+          "DA_TU_VAN",
+          "DANG_TIM_GS",
+          "HUY"
+        ]
+      },
+      "UpdateRequestStatusDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "example": "DA_TU_VAN",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiCapNhatYeuCau"
+              }
+            ]
+          },
+          "lyDoHuy": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "example": "Gia đình thay đổi kế hoạch",
+            "description": "Bắt buộc có nội dung khi HUY; phải bỏ trường này khi đích khác HUY."
+          }
+        },
+        "required": [
+          "trangThai"
         ]
       }
     }
