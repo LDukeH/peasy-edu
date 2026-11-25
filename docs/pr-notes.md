@@ -36,7 +36,7 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
 
 #### `W2-FE2` — Không gian Gia sư: Hồ sơ & Lịch rảnh *(Nam)*
 - [ ] **Đổi hình thức dạy sang `ONLINE` (`PATCH /api/tutors/:id`)** *(review PR #10)*: Không gửi `khuVucNhanDay: []` vì DTO hiện có `@ArrayMinSize(1)` sẽ trả `400` (nên bỏ qua trường này khi đổi sang `ONLINE`, trừ khi BE mở lại rule).
-  - Cập nhật từ PR W2-BE1: BE đã cho phép `khuVucNhanDay: []` (bỏ `minItems`); `TAI_NHA`/`CA_HAI` mà hết khu vực sau cập nhật vẫn trả `400`. Chạy lại `gen:api` sau khi PR merge.
+  - Cập nhật từ PR #15: BE đã cho phép `khuVucNhanDay: []` (bỏ `minItems`); `TAI_NHA`/`CA_HAI` mà hết khu vực sau cập nhật vẫn trả `400`. Chạy lại `gen:api` sau khi PR merge.
 
 ---
 
@@ -58,20 +58,20 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
 
 #### `W2-BE1` — Logic Hồ sơ Gia sư, Môn dạy, Lịch rảnh & Duyệt *(Đức)*
 - [x] **Khóa mã hóa CCCD & STK ngân hàng** *(từ PR #10)*: Schema lưu `cccdMaHoa`, `cccdHmac`, `taiKhoanNganHangMaHoa` → bổ sung biến môi trường khóa mã hóa vào `be/.env.example` và báo Duy cấu hình trên Render.
-  - Xử lý ở PR W2-BE1: `DATA_ENCRYPTION_KEY` (AES-256-GCM) và `DATA_HMAC_KEY` (HMAC-SHA256 cho `cccdHmac`), mỗi khóa base64 32 byte, hai khóa khác nhau. DB dùng chung → cả nhóm và Render (nếu cùng DB) dùng **cùng một cặp khóa**.
+  - Xử lý ở PR #15: `DATA_ENCRYPTION_KEY` (AES-256-GCM) và `DATA_HMAC_KEY` (HMAC-SHA256 cho `cccdHmac`), mỗi khóa base64 32 byte, hai khóa khác nhau. DB dùng chung → cả nhóm và Render (nếu cùng DB) dùng **cùng một cặp khóa**.
 - [x] **Nguồn lưu `lyDoTuChoi`** *(review PR #10)*: `TutorDetailDto` có `lyDoTuChoi: string | null`, nhưng bảng `GiaSu` trong `be/prisma/schema.prisma` chưa có cột này → chốt đọc từ `NhatKyThayDoi` hay thêm cột `lyDoTuChoi String?` ở migration Tuần 2.
   - Chốt 23/11: đọc `lyDo` của bản ghi `NhatKyThayDoi` mới nhất (`loaiDoiTuong = 'GiaSu'`, `hanhDong = 'TU_CHOI'`), không thêm cột/migration.
 - [x] **Mapping tên trường & sinh mã nội bộ** *(review PR #10)*:
   - Map `MonDayInputDto.capHoc` ↔ cột `MonDay.capLop` trong Prisma.
   - `ngayUngTuyen` map từ `GiaSu.thoiDiemGhiNhanDongY` → nhớ điền khi seed ~15 gia sư và fallback sort `id desc` nếu `null`.
   - Các bảng `MonDay`, `LichRanh`, `HoSoNangLuc` đều có cột `ma String @unique` (không xuất ra DTO) → tự sinh mã duy nhất khi insert DB.
-  - Xử lý ở PR W2-BE1: mã con sinh từ mã GS (`GS00016-MH01`, `GS00016-LR1-1800-2100`, `GS00016-HS01`); danh sách sort `thoiDiemGhiNhanDongY desc nulls last, id desc`; seed điền đủ ngày nộp.
+  - Xử lý ở PR #15: mã con sinh từ mã GS (`GS00016-MH01`, `GS00016-LR1-1800-2100`, `GS00016-HS01`); danh sách sort `thoiDiemGhiNhanDongY desc nulls last, id desc`; seed điền đủ ngày nộp.
 - [x] **Chốt trạng thái được phép sửa ở `PATCH /api/tutors/:id`** *(review PR #10)*: Xác định rõ gia sư ở trạng thái `NGUNG_HOP_TAC` / `BI_TU_CHOI` / `CHO_DUYET` có được sửa hồ sơ không.
   - Chốt 23/11: `GIA_SU` tự sửa khi `CHO_DUYET` / `DANG_HOAT_DONG` / `TAM_NGUNG`; `BI_TU_CHOI`, `NGUNG_HOP_TAC` → `409`; `DIEU_PHOI` sửa mọi trạng thái. Áp dụng cả `PUT /subjects` và `PUT /availability`.
 - [x] **Edge case `khuVucNhanDay: []` khi đổi sang `ONLINE`** *(review PR #10)*: `UpdateTutorDto` kế thừa `@ArrayMinSize(1)` từ `ApplyTutorDto` nên gửi `khuVucNhanDay: []` khi đổi sang `ONLINE` sẽ bị `400` → điều chỉnh điều kiện `@ValidateIf` nếu muốn cho phép xóa mảng, hoặc thống nhất với FE không gửi trường này.
-  - Xử lý ở PR W2-BE1: cả Apply và Update nhận `[]`; server kiểm tra `TAI_NHA`/`CA_HAI` còn ≥ 1 khu vực trên dữ liệu sau khi gộp.
+  - Xử lý ở PR #15: cả Apply và Update nhận `[]`; server kiểm tra `TAI_NHA`/`CA_HAI` còn ≥ 1 khu vực trên dữ liệu sau khi gộp.
 - [x] **Siết validate `format: 'date'`** *(review PR #10)*: `@IsISO8601({ strict: true })` cho `ngaySinh`, `ngayCap`, `ngayHetHan` đang nhận cả chuỗi có giờ (`2000-08-15T10:00:00Z`) → cân nhắc thêm `@Matches(/^\d{4}-\d{2}-\d{2}$/)` để khớp chặt chuẩn `date`.
-  - Xử lý ở PR W2-BE1: thêm `@Matches` + `pattern` trong OpenAPI → FE chạy lại `gen:api`.
+  - Xử lý ở PR #15: thêm `@Matches` + `pattern` trong OpenAPI → FE chạy lại `gen:api`.
 
 ---
 
@@ -83,7 +83,7 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
   - Cấp **Signed URL** khi xem ảnh CCCD / giấy tờ năng lực.
 - [ ] **Lưu ý `JsonOnlyMiddleware`** *(review PR #10)*: `AppModule` đang áp dụng `JsonOnlyMiddleware` cho mọi route (`{*duongDan}`). Nếu `/storage/upload` dùng `multipart/form-data`, cần exclude route này (hoặc dùng luồng xin Presigned Upload URL bằng JSON).
 - [ ] **Biến môi trường mã hóa trên Render** *(từ PR #10)*: Thêm khóa mã hóa cho CCCD/STK của `W2-BE1` lên Staging & Production sau khi Đức chốt tên biến trong `be/.env.example`.
-  - Tên biến (PR W2-BE1): `DATA_ENCRYPTION_KEY`, `DATA_HMAC_KEY`. Cần **một cặp dùng chung** gửi riêng cho cả nhóm (không commit), vì dữ liệu mã hóa bằng khóa khác sẽ không giải mã được. Thiếu khóa: đăng nhập vẫn chạy, API hồ sơ gia sư trả `500`.
+  - Tên biến (PR #15): `DATA_ENCRYPTION_KEY`, `DATA_HMAC_KEY`. Cần **một cặp dùng chung** gửi riêng cho cả nhóm (không commit), vì dữ liệu mã hóa bằng khóa khác sẽ không giải mã được. Thiếu khóa: đăng nhập vẫn chạy, API hồ sơ gia sư trả `500`.
 
 ---
 
@@ -108,6 +108,7 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
 | PR | Mã task | Nhánh | Tác giả | Ngày tạo |
 | :---: | :---: | :--- | :--- | :---: |
 | [#10](https://github.com/LDukeH/peasy-edu/pull/10) | `W2-C1` | `contract/w2-tutors` | Đức (`broccoli2609`) | 2026-11-22 |
+| [#15](https://github.com/LDukeH/peasy-edu/pull/15) | `W2-BE1` | `feat/w2-be-tutors` | Đức (`broccoli2609`) | 2026-11-26 |
 
 ---
 
