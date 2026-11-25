@@ -3801,12 +3801,14 @@
           "ngayCap": {
             "type": "string",
             "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "example": "2022-07-15"
           },
           "ngayHetHan": {
             "type": "string",
-            "description": "Ngày hết hạn (thẻ sinh viên, chứng chỉ ngoại ngữ…)",
+            "description": "Ngày hết hạn (thẻ sinh viên, chứng chỉ ngoại ngữ…); không trước ngày cấp",
             "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "example": "2026-07-15"
           },
           "tep": {
@@ -3835,6 +3837,7 @@
           "ngaySinh": {
             "type": "string",
             "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "example": "2000-08-15"
           },
           "gioiTinh": {
@@ -3929,9 +3932,8 @@
           },
           "khuVucNhanDay": {
             "uniqueItems": true,
-            "minItems": 1,
             "maxItems": 20,
-            "description": "Khu vực nhận dạy (nhóm phường/xã). Bắt buộc ít nhất 1 khi hinhThucDay là TAI_NHA hoặc CA_HAI",
+            "description": "Khu vực nhận dạy (nhóm phường/xã). Bắt buộc ít nhất 1 khi hinhThucDay là TAI_NHA hoặc CA_HAI; ONLINE được bỏ trống hoặc gửi []",
             "example": [
               "Bình Thạnh",
               "Phú Nhuận"
@@ -4704,21 +4706,6 @@
               }
             ]
           },
-          "khuVucNhanDay": {
-            "uniqueItems": true,
-            "minItems": 1,
-            "maxItems": 20,
-            "description": "Khu vực nhận dạy (nhóm phường/xã). Bắt buộc ít nhất 1 khi hinhThucDay là TAI_NHA hoặc CA_HAI",
-            "example": [
-              "Bình Thạnh",
-              "Phú Nhuận"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string",
-              "maxLength": 100
-            }
-          },
           "thuLaoMongMuon": {
             "type": "integer",
             "minimum": 0,
@@ -4737,8 +4724,27 @@
             "maxLength": 2000,
             "example": "2 năm dạy kèm Toán lớp 6–9"
           },
+          "khuVucNhanDay": {
+            "uniqueItems": true,
+            "maxItems": 20,
+            "description": "Thay toàn bộ khu vực nhận dạy. Được gửi [] (vd. khi chuyển sang ONLINE); sau cập nhật, TAI_NHA hoặc CA_HAI phải còn ít nhất 1 khu vực",
+            "example": [
+              "Bình Thạnh",
+              "Phú Nhuận"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
           "taiKhoanNganHang": {
-            "$ref": "#/components/schemas/TaiKhoanNganHangInputDto"
+            "description": "Gửi đủ 3 trường để thay tài khoản; không xóa được bằng null",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaiKhoanNganHangInputDto"
+              }
+            ]
           }
         }
       },

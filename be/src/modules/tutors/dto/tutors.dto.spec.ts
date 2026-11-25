@@ -62,6 +62,35 @@ describe('ApplyTutorDto', () => {
     ).toEqual([]);
   });
 
+  it('ONLINE được gửi khu vực rỗng, dạy tại nhà thì không (review PR #10)', async () => {
+    expect(
+      await loi(ApplyTutorDto, {
+        ...hoSoHopLe,
+        hinhThucDay: 'ONLINE',
+        khuVucNhanDay: [],
+      }),
+    ).toEqual([]);
+    for (const hinhThucDay of ['TAI_NHA', 'CA_HAI']) {
+      expect(
+        await loi(ApplyTutorDto, { ...hoSoHopLe, hinhThucDay, khuVucNhanDay: [] }),
+      ).toEqual(['khuVucNhanDay']);
+    }
+  });
+
+  it('ngày chỉ nhận YYYY-MM-DD, từ chối chuỗi có giờ (review PR #10)', async () => {
+    const [giayTo] = hoSoHopLe.hoSoNangLuc;
+    expect(
+      await loi(ApplyTutorDto, {
+        ...hoSoHopLe,
+        ngaySinh: '2000-08-15T10:00:00Z',
+        hoSoNangLuc: [{ ...giayTo, ngayCap: '2022-07-15T00:00:00Z' }],
+      }),
+    ).toEqual(['ngaySinh', 'hoSoNangLuc']);
+    expect(
+      await loi(ApplyTutorDto, { ...hoSoHopLe, ngaySinh: '2000-02-30' }),
+    ).toEqual(['ngaySinh']);
+  });
+
   it('từ chối khi chưa đồng ý xử lý dữ liệu cá nhân', async () => {
     expect(
       await loi(ApplyTutorDto, { ...hoSoHopLe, dongYXuLyDuLieu: false }),
@@ -89,6 +118,37 @@ describe('UpdateTutorDto', () => {
     expect(await loi(UpdateTutorDto, { soCccd: '079200001042' })).toEqual([
       'soCccd',
     ]);
+  });
+
+  it('cho gửi khuVucNhanDay rỗng khi đổi sang ONLINE (review PR #10)', async () => {
+    expect(
+      await loi(UpdateTutorDto, { hinhThucDay: 'ONLINE', khuVucNhanDay: [] }),
+    ).toEqual([]);
+    expect(await loi(UpdateTutorDto, { khuVucNhanDay: [] })).toEqual([]);
+  });
+
+  it('trường bắt buộc gửi null bị chặn; trường tùy chọn gửi null để xóa', async () => {
+    const loiNull = await loi(UpdateTutorDto, {
+      soDienThoai: null,
+      email: null,
+      hinhThucDay: null,
+      khuVucNhanDay: null,
+      taiKhoanNganHang: null,
+    });
+    expect(loiNull.sort()).toEqual([
+      'email',
+      'hinhThucDay',
+      'khuVucNhanDay',
+      'soDienThoai',
+      'taiKhoanNganHang',
+    ]);
+    expect(
+      await loi(UpdateTutorDto, {
+        donViCongTac: null,
+        thuLaoMongMuon: null,
+        gioiThieu: null,
+      }),
+    ).toEqual([]);
   });
 });
 
