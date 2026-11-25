@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { Logo } from "@/components/ui/logo";
+import Image from "next/image";
+import Link from "next/link";
+import { LogoPeasyEdu } from "@/components/common/logo";
 
 export function BrandPanel({
   widthClass,
@@ -12,26 +14,27 @@ export function BrandPanel({
 }) {
   return (
     <aside
-      className={`flex shrink-0 flex-col bg-sidebar p-8 text-white lg:p-16 ${gapClass} ${widthClass}`}
+      className={`flex shrink-0 flex-col bg-[#075568] p-8 text-white lg:p-16 ${gapClass} ${widthClass}`}
     >
-      <Logo className="w-[200px]" />
+      <Link href="/" className="w-fit hover:opacity-95 transition-opacity">
+        <LogoPeasyEdu size="md" boxed />
+      </Link>
       {children}
     </aside>
   );
 }
 
-/** Thay cho ảnh "Learning photograph" (cần tải từ Figma). */
-export function PhotoPlaceholder() {
+export function LoginLearningPhoto() {
   return (
-    <div
-      aria-hidden="true"
-      className="relative hidden h-[350px] w-full overflow-hidden rounded-[20px] bg-gradient-to-br from-[#3c94a4] via-[#116f7c] to-[#0a5464] lg:block"
-    >
-      <div className="absolute -right-10 -top-10 size-48 rounded-full bg-white/10" />
-      <div className="absolute -bottom-16 -left-10 size-64 rounded-full bg-white/10" />
-      <p className="absolute bottom-5 left-6 text-xs text-white/70">
-        (Ảnh minh họa · thay bằng ảnh từ Figma)
-      </p>
+    <div className="relative hidden h-[350px] w-full overflow-hidden rounded-[20px] bg-[#0a5f70] lg:block">
+      <Image
+        src="/brand/login-learning.png"
+        alt="Gia sư PeasyEdu hướng dẫn học viên học tập"
+        fill
+        sizes="(max-width: 1024px) 100vw, 522px"
+        className="object-cover"
+        priority
+      />
     </div>
   );
 }

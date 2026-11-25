@@ -30,7 +30,7 @@ export const ALL_VAI_TRO: VaiTro[] = [
 ];
 
 export const TRANG_THAI_TAI_KHOAN_LABEL: Record<TrangThaiTaiKhoan, string> = {
-  HOAT_DONG: "Đang hoạt động",
+  HOAT_DONG: "Hoạt động",
   BI_KHOA: "Bị khóa",
 };
 

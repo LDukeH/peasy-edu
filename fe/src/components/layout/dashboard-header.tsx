@@ -1,77 +1,82 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { useAuthStore } from "@/stores/auth-store";
-import { useSignOut } from "@/hooks/use-auth-session";
-import { ROLE_LABELS, UserRole } from "@/types/auth";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 
-export function DashboardHeader() {
-  const { role, setRole, user, isAuthenticated } = useAuthStore();
-  const { signOut, isPending } = useSignOut();
+const NOTIFICATIONS = [
+  {
+    id: "1",
+    title: "3 hồ sơ gia sư chờ xác minh hơn 24 giờ",
+    time: "10 phút trước",
+  },
+  {
+    id: "2",
+    title: "Phụ huynh Trần Thu Hà vừa xác nhận buổi 7 (LP00816)",
+    time: "35 phút trước",
+  },
+  {
+    id: "3",
+    title: "Yêu cầu mới YC01028 · Toán lớp 9 tại Bình Thạnh",
+    time: "1 giờ trước",
+  },
+];
+
+export function DashboardHeader({
+  section = "Điều phối",
+  current = "Tổng quan",
+}: {
+  section?: string;
+  current?: string;
+}) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between shrink-0 sticky top-0 z-40 shadow-xs">
-      {/* Left: Quick search / context */}
-      <div className="flex items-center gap-3">
-        <Badge variant="outline" className="text-xs bg-secondary/50 font-semibold text-primary">
-          {ROLE_LABELS[role]}
-        </Badge>
-        <span className="text-xs text-muted-foreground hidden sm:inline">
-          Hệ thống Quản lý Trung tâm Gia sư PeasyEdu (SE100.R12)
-        </span>
-      </div>
+    <header className="relative h-[72px] shrink-0 border-b border-[#dce4eb] bg-white px-8 flex items-center justify-between">
+      <p className="text-[13px] leading-[18px] font-medium text-[#3d5266]">
+        <span>{section}</span>
+        <span className="mx-2">/</span>
+        <span className="font-semibold text-[#172b4d]">{current}</span>
+      </p>
 
-      {/* Right: Role Switcher Tool + User Info */}
-      <div className="flex items-center gap-4">
-        {/* Quick Role Switcher for Testing */}
-        <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-lg border border-border">
-          <span className="text-xs font-medium text-muted-foreground hidden md:inline">
-            Đổi vai trò test:
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="cursor-pointer bg-white border border-[#d9e0e8] hover:bg-[#f5f8fa] rounded-[8px] pl-3 pr-2 py-1.5 flex items-center gap-2 transition-colors"
+        >
+          <span className="text-xs leading-[18px] text-[#172b4d]">
+            Thông báo
           </span>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-            className="bg-transparent text-xs font-semibold text-foreground focus:outline-none cursor-pointer"
-          >
-            {Object.entries(ROLE_LABELS).map(([key, label]) => (
-              <option key={key} value={key} className="bg-card text-foreground">
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <span className="size-5 rounded-full bg-[#116f7c] text-white text-xs font-semibold leading-[18px] flex items-center justify-center">
+            {NOTIFICATIONS.length}
+          </span>
+        </button>
 
-        {/* Public home link */}
-        <Link href="/">
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-            Về trang chủ
-          </Button>
-        </Link>
-
-        {/* User Info & Avatar */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-border">
-          <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shadow-xs">
-            {user?.name ? user.name.charAt(0) : "U"}
+        {open && (
+          <div className="absolute right-0 mt-2 w-[320px] rounded-[12px] border border-[#dce4eb] bg-white p-4 shadow-lg z-50 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-[#172b4d]">
+                Thông báo gần đây
+              </p>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-xs text-[#52677d] hover:text-[#172b4d] cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+            <div className="divide-y divide-[#e3e8f0]">
+              {NOTIFICATIONS.map((n) => (
+                <div key={n.id} className="py-2.5 first:pt-0 last:pb-0">
+                  <p className="text-xs font-medium text-[#172b4d] leading-[18px]">
+                    {n.title}
+                  </p>
+                  <p className="text-[11px] text-[#52677d] mt-0.5">{n.time}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="hidden sm:block text-left">
-            <p className="text-xs font-bold text-foreground leading-tight">{user?.name || "Người dùng"}</p>
-            <p className="text-[11px] text-muted-foreground">{ROLE_LABELS[role]}</p>
-          </div>
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isPending}
-              onClick={signOut}
-              className="text-xs text-muted-foreground"
-            >
-              {isPending ? "Đang xuất…" : "Đăng xuất"}
-            </Button>
-          )}
-        </div>
+        )}
       </div>
     </header>
   );

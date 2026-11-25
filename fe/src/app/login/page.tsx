@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { getAuthMeQueryKey, useAuthLogin } from "@/api/generated/peasyApi";
-import { BrandPanel, PhotoPlaceholder } from "@/components/auth/brand-panel";
+import { BrandPanel, LoginLearningPhoto } from "@/components/auth/brand-panel";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
@@ -27,7 +27,6 @@ interface Errors {
 
 function normalizeIdentifier(raw: string): string {
   const trimmed = raw.trim();
-  // Nếu người dùng nhập số điện thoại có dấu cách (vd: "090 000 0003"), gom lại thành 10 chữ số
   if (/^[\d\s.-]+$/.test(trimmed)) {
     return normalizePhone(trimmed);
   }
@@ -57,7 +56,8 @@ export default function LoginPage() {
     setInfo("");
     const next: Errors = {};
     const tenDangNhap = normalizeIdentifier(username);
-    if (!tenDangNhap) next.username = "Vui lòng nhập tên đăng nhập hoặc số điện thoại.";
+    if (!tenDangNhap)
+      next.username = "Vui lòng nhập tên đăng nhập hoặc số điện thoại.";
     if (!password) next.password = "Vui lòng nhập mật khẩu.";
     setErrors(next);
     if (next.username || next.password) return;
@@ -71,7 +71,10 @@ export default function LoginPage() {
       useAuthStore.getState().setUser(mapUserDtoToProfile(loggedInUser));
       router.replace(homeForRole(loggedInUser.vaiTro));
     } catch (err) {
-      const parsed = extractApiError(err, "Đăng nhập thất bại. Vui lòng thử lại.");
+      const parsed = extractApiError(
+        err,
+        "Mật khẩu chưa đúng. Thử lại hoặc chọn Quên mật khẩu.",
+      );
       setErrors({ form: parsed.message });
     }
   }
@@ -85,13 +88,12 @@ export default function LoginPage() {
             <br />
             Một hành trình tiến bộ.
           </h2>
-          <p className="text-base leading-6 text-inverse-muted">
-            Lịch học, báo cáo và những bước tiến của con luôn ở trong tầm nhìn
-            của bạn.
+          <p className="text-base leading-6 text-[#c5d0da]">
+            Theo dõi lịch học, báo cáo và tiến bộ của con ở một nơi.
           </p>
         </div>
-        <PhotoPlaceholder />
-        <p className="text-xs leading-[18px] text-inverse-muted">
+        <LoginLearningPhoto />
+        <p className="text-xs leading-[18px] text-[#c5d0da]">
           PeasyEdu · Đồng hành cùng gia đình và gia sư.
         </p>
       </BrandPanel>
@@ -100,26 +102,23 @@ export default function LoginPage() {
         <form
           onSubmit={onSubmit}
           noValidate
-          className="flex w-full max-w-[560px] flex-col gap-[26px]"
+          className="flex w-full max-w-[590px] flex-col gap-[26px]"
         >
-          <p className="text-xs font-semibold leading-[18px] text-brand">
-            ● CỔNG PeasyEdu
-          </p>
-          <h1 className="text-[32px] font-semibold leading-[44px] text-body">
-            Chào mừng trở lại
+          <h1 className="text-[32px] font-semibold leading-[44px] text-[#33465c]">
+            Đăng nhập
           </h1>
-          <p className="text-sm leading-[22px] text-text-muted">
-            Đăng nhập bằng tên đăng nhập được cấp hoặc số điện thoại đã đăng ký.
+          <p className="text-sm leading-[22px] text-[#52677d]">
+            Đăng nhập bằng tài khoản được cấp hoặc đã đăng ký. Không cần chọn vai trò để thay đổi quyền.
           </p>
 
           {errors.form && <Notice tone="error">{errors.form}</Notice>}
           {info && <Notice tone="info">{info}</Notice>}
 
           <Field
-            label="Tên đăng nhập hoặc số điện thoại *"
+            label="Số điện thoại * (tên đăng nhập)"
             type="text"
             autoComplete="username"
-            placeholder="quanly01 hoặc 090 000 0003"
+            placeholder="090 123 4567 hoặc quanly01"
             value={username}
             error={errors.username}
             onChange={(e) => setUsername(e.target.value)}
@@ -135,12 +134,12 @@ export default function LoginPage() {
           />
 
           <div className="flex items-center justify-between gap-4">
-            <label className="flex cursor-pointer items-center gap-2 text-xs leading-[18px] text-body">
+            <label className="flex cursor-pointer items-center gap-2 text-xs leading-[18px] text-[#33465c]">
               <input
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="size-4 accent-brand"
+                className="size-4 accent-[#116f7c]"
               />
               Ghi nhớ đăng nhập
             </label>
@@ -149,7 +148,7 @@ export default function LoginPage() {
               onClick={() =>
                 setInfo("Tính năng khôi phục mật khẩu sẽ có ở bước sau.")
               }
-              className="cursor-pointer text-xs leading-[18px] text-brand hover:underline"
+              className="cursor-pointer text-xs leading-[18px] text-[#116f7c] hover:underline"
             >
               Quên mật khẩu?
             </button>
@@ -161,13 +160,13 @@ export default function LoginPage() {
             </Button>
           </div>
 
-          <p className="text-sm leading-[22px] text-text-muted">
+          <p className="text-sm leading-[22px] text-[#52677d]">
             Chưa có tài khoản?{" "}
-            <Link href="/register" className="text-brand hover:underline">
+            <Link href="/register" className="text-[#116f7c] hover:underline">
               Đăng ký Phụ huynh / Gia sư
             </Link>
           </p>
-          <p className="text-xs leading-[18px] text-text-muted">
+          <p className="text-xs leading-[18px] text-[#52677d]">
             Hỗ trợ đăng nhập: 028 3822 0123 · Không chia sẻ mật khẩu.
           </p>
         </form>

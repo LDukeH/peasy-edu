@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { AdminTabs } from "@/components/admin/admin-tabs";
-import { PageHeading } from "@/components/admin/page-heading";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
@@ -56,10 +55,9 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageHeading
-        title="Cài đặt & phân quyền"
-        subtitle="Một trung tâm duy nhất · Quản lý quyền truy cập theo vai trò và phạm vi dữ liệu."
-      />
+      <h1 className="text-[28px] sm:text-[32px] font-normal leading-[44px] text-[#172b4d]">
+        Cài đặt &amp; phân quyền
+      </h1>
       <AdminTabs />
 
       <section className="flex flex-col gap-[18px] rounded-xl border border-line bg-white p-6">

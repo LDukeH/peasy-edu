@@ -114,9 +114,8 @@ export default function RegisterPage() {
           Hoàn thiện hồ sơ, xác minh bằng cấp, nhận lời mời lớp và quản lý lịch
           dạy riêng.
         </InfoCard>
-        <p className="text-xs leading-[18px] text-inverse-muted">
-          Tài khoản nhân sự do Quản lý cấp. Tài khoản học viên được liên kết với
-          gia đình.
+        <p className="text-xs leading-[18px] text-[#c5d0da]">
+          Tài khoản nhân sự do Quản trị viên cấp. Tài khoản học viên được liên kết với gia đình.
         </p>
       </BrandPanel>
 
@@ -126,7 +125,7 @@ export default function RegisterPage() {
           noValidate
           className="flex max-w-[720px] flex-col gap-[22px]"
         >
-          <h1 className="text-[32px] font-semibold leading-[44px] text-body">
+          <h1 className="text-[32px] font-semibold leading-[44px] text-[#33465c]">
             Tạo tài khoản mới
           </h1>
 
@@ -148,10 +147,10 @@ export default function RegisterPage() {
                     setRole(value);
                     setErrors({});
                   }}
-                  className={`cursor-pointer rounded-lg px-4 py-[11px] text-sm font-semibold leading-5 ${
+                  className={`cursor-pointer rounded-[8px] px-4 py-3 text-sm font-semibold leading-5 transition-colors ${
                     active
-                      ? "bg-brand text-white"
-                      : "border border-line bg-white text-body"
+                      ? "bg-[#116f7c] text-white"
+                      : "border border-[#dce4eb] bg-white text-[#33465c] hover:bg-[#f5f8fa]"
                   }`}
                 >
                   {active ? "●" : "○"} {label}
