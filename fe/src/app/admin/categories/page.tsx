@@ -23,16 +23,21 @@ type Dialog =
   | null;
 
 const REFERENCE_AREAS = [
-  "Quận 1",
-  "Quận 3",
-  "Quận 7",
   "Bình Thạnh",
-  "TP. Thủ Đức",
+  "Phú Nhuận",
+  "Gò Vấp",
+  "Thủ Đức",
+  "Quận 3",
   "Học trực tuyến (Online)",
 ];
 
 export default function CategoriesPage() {
-  const { data: subjects = [], isPending, isError, error } = useSubjectsFindAll();
+  const {
+    data: subjects = [],
+    isPending,
+    isError,
+    error,
+  } = useSubjectsFindAll();
   const [dialog, setDialog] = useState<Dialog>(null);
   const close = () => setDialog(null);
 
@@ -50,60 +55,58 @@ export default function CategoriesPage() {
         </Notice>
       )}
 
-      <div className="flex flex-col gap-4 lg:flex-row">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Cột Môn học — Nối API thật /api/subjects */}
-        <section className="flex min-h-[540px] min-w-0 flex-[1.4] flex-col gap-4 rounded-[10px] border border-line bg-white p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold leading-7 text-ink">
-              Môn học
-            </h2>
-            <Button
-              variant="secondary"
-              onClick={() => setDialog({ type: "edit" })}
-            >
-              Thêm môn
-            </Button>
-          </div>
+        <section className="flex min-h-[540px] lg:min-h-[650px] min-w-0 flex-col items-start gap-4 rounded-[10px] border border-[#dce4eb] bg-white p-5">
+          <h2 className="text-xl font-semibold leading-7 text-[#172b4d]">
+            Môn học
+          </h2>
+          <Button
+            variant="secondary"
+            onClick={() => setDialog({ type: "edit" })}
+          >
+            Thêm môn
+          </Button>
 
           {isPending ? (
-            <p className="py-4 text-sm text-text-muted">Đang tải môn học…</p>
+            <p className="py-4 text-sm text-[#52677d]">Đang tải môn học…</p>
           ) : subjects.length === 0 ? (
-            <p className="py-4 text-sm text-text-muted">
+            <p className="py-4 text-sm text-[#52677d]">
               Chưa có môn học nào.
             </p>
           ) : (
-            <ul>
+            <ul className="w-full">
               {subjects.map((s) => {
                 const isActive = s.trangThai === TrangThaiMonHoc.DANG_SU_DUNG;
                 return (
-                  <li key={s.id} className="border-b border-line">
+                  <li key={s.id} className="border-b border-[#dce4eb]">
                     <button
                       type="button"
                       onClick={() => setDialog({ type: "edit", subject: s })}
                       title="Bấm để sửa hoặc xóa môn học"
-                      className="flex w-full cursor-pointer items-center gap-3 py-2.5 text-left hover:bg-canvas"
+                      className="flex w-full cursor-pointer items-center gap-3 py-2 text-left hover:bg-[#f5f8fa] transition-colors"
                     >
                       <div className="min-w-0 flex-1">
                         <p
-                          className={`text-sm font-medium leading-[22px] ${
+                          className={`text-sm leading-[22px] ${
                             isActive
-                              ? "text-body"
-                              : "text-text-muted line-through"
+                              ? "text-[#33465c]"
+                              : "text-[#52677d] line-through"
                           }`}
                         >
-                          <span className="mr-1.5 font-semibold text-ink">
+                          <span className="mr-1.5 font-semibold text-[#172b4d]">
                             {s.ma}
                           </span>
                           {s.tenMon}
                         </p>
-                        <p className="text-xs leading-[18px] text-text-muted">
+                        <p className="text-xs leading-[18px] text-[#52677d]">
                           {NHOM_MON_LABEL[s.nhomMon]} ·{" "}
                           {s.capHoc.map((c) => CAP_HOC_LABEL[c]).join(", ")}
                         </p>
                       </div>
                       <span
                         className={`text-xs leading-[18px] whitespace-nowrap ${
-                          isActive ? "text-brand" : "text-warn"
+                          isActive ? "text-[#116f7c]" : "text-[#7a440a]"
                         }`}
                       >
                         {TRANG_THAI_MON_HOC_LABEL[s.trangThai]}
@@ -116,44 +119,48 @@ export default function CategoriesPage() {
           )}
         </section>
 
-        {/* Cột Cấp học — Danh mục chuẩn theo enum CapHoc */}
-        <section className="flex min-h-[540px] min-w-0 flex-1 flex-col gap-4 rounded-[10px] border border-line bg-white p-5">
-          <h2 className="text-xl font-semibold leading-7 text-ink">Cấp học</h2>
-          <ul>
+        {/* Cột Cấp học — Giữ 5 cấp chuẩn theo enum CapHoc */}
+        <section className="flex min-h-[540px] lg:min-h-[650px] min-w-0 flex-col items-start gap-4 rounded-[10px] border border-[#dce4eb] bg-white p-5">
+          <h2 className="text-xl font-semibold leading-7 text-[#172b4d]">
+            Cấp học
+          </h2>
+          <ul className="w-full">
             {ALL_CAP_HOC.map((level) => (
               <li
                 key={level}
-                className="flex items-center justify-between border-b border-line py-2.5 text-sm leading-[22px] text-body"
+                className="flex items-center justify-between border-b border-[#dce4eb] py-2 text-sm leading-[22px] text-[#33465c]"
               >
                 <span>{CAP_HOC_LABEL[level]}</span>
-                <span className="text-xs leading-[18px] text-brand">
+                <span className="text-xs leading-[18px] text-[#116f7c]">
                   Đang dùng
                 </span>
               </li>
             ))}
           </ul>
-          <p className="text-xs leading-[18px] text-text-muted">
+          <p className="text-xs leading-[18px] text-[#52677d]">
             Cấp học được chuẩn hóa theo hệ thống để kiểm tra điều kiện môn học.
           </p>
         </section>
 
         {/* Cột Khu vực — Tham chiếu */}
-        <section className="flex min-h-[540px] min-w-0 flex-1 flex-col gap-4 rounded-[10px] border border-line bg-white p-5">
-          <h2 className="text-xl font-semibold leading-7 text-ink">Khu vực</h2>
-          <ul>
+        <section className="flex min-h-[540px] lg:min-h-[650px] min-w-0 flex-col items-start gap-4 rounded-[10px] border border-[#dce4eb] bg-white p-5">
+          <h2 className="text-xl font-semibold leading-7 text-[#172b4d]">
+            Khu vực
+          </h2>
+          <ul className="w-full">
             {REFERENCE_AREAS.map((area) => (
               <li
                 key={area}
-                className="flex items-center justify-between border-b border-line py-2.5 text-sm leading-[22px] text-body"
+                className="flex items-center justify-between border-b border-[#dce4eb] py-2 text-sm leading-[22px] text-[#33465c]"
               >
                 <span>{area}</span>
-                <span className="text-xs leading-[18px] text-brand">
+                <span className="text-xs leading-[18px] text-[#116f7c]">
                   Đang dùng
                 </span>
               </li>
             ))}
           </ul>
-          <p className="text-xs leading-[18px] text-text-muted">
+          <p className="text-xs leading-[18px] text-[#52677d]">
             Khu vực phục vụ dùng để lọc gia sư và ghép lớp, không phải danh sách
             chi nhánh.
           </p>

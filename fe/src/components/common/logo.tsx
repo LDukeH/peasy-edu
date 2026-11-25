@@ -7,43 +7,48 @@ interface LogoProps {
   variant?: "light" | "dark";
   showSlogan?: boolean;
   size?: "sm" | "md" | "lg";
+  boxed?: boolean;
 }
 
 /**
- * LogoPeasyEdu - Đồng bộ chính xác theo Figma design (node 2236:16141 & 2236:7204)
- * Mascot: Chú đậu xanh đội mũ cử nhân và đeo kính
- * Brand: Peasy (#0a5464 / #ffffff) Edu (#3c94a4 / #77c5cf)
- * Slogan: CÙNG CON TIẾN BỘ
+ * LogoPeasyEdu - Đồng bộ chính xác theo Figma design (node 2236:16141)
+ * Container: bg-[#f7fafb] rounded-[12px] pl-[10px] pr-[14px] py-[4px] h-[50px] w-[178px]
+ * Brand: Fredoka Bold 20px/24px Peasy (#0a5464) Edu (#3c94a4)
+ * Slogan: Inter SemiBold 12px/16px CÙNG CON TIẾN BỘ (#116f7c)
  */
 export function LogoPeasyEdu({
   className,
   variant = "light",
   showSlogan = true,
   size = "md",
+  boxed = true,
 }: LogoProps) {
-  const isDark = variant === "dark";
+  const isDark = variant === "dark" && !boxed;
 
   const sizeConfigs = {
     sm: {
-      mascotWidth: 20,
-      mascotHeight: 32,
-      textSize: "text-base",
-      sloganSize: "text-[8px]",
+      mascotWidth: 22,
+      mascotHeight: 36,
+      textSize: "text-[18px] leading-[22px]",
+      sloganSize: "text-[10px] leading-[14px]",
       gap: "gap-2",
+      box: "rounded-[10px] pl-[8px] pr-[12px] py-[4px]",
     },
     md: {
       mascotWidth: 26,
       mascotHeight: 42,
-      textSize: "text-[20px]",
-      sloganSize: "text-[10px]",
-      gap: "gap-2.5",
+      textSize: "text-[20px] leading-[24px]",
+      sloganSize: "text-[12px] leading-[16px]",
+      gap: "gap-[10px]",
+      box: "h-[50px] w-[178px] rounded-[12px] pl-[10px] pr-[14px] py-[4px]",
     },
     lg: {
       mascotWidth: 32,
-      mascotHeight: 52,
-      textSize: "text-2xl",
-      sloganSize: "text-xs",
+      mascotHeight: 50,
+      textSize: "text-[24px] leading-[28px]",
+      sloganSize: "text-[12px] leading-[16px]",
       gap: "gap-3",
+      box: "rounded-[14px] pl-[12px] pr-[16px] py-[6px]",
     },
   };
 
@@ -52,12 +57,13 @@ export function LogoPeasyEdu({
   return (
     <div
       className={cn(
-        "flex items-center shrink-0 select-none",
+        "flex items-center shrink-0 select-none overflow-hidden",
         currentSize.gap,
+        boxed && "bg-[#f7fafb]",
+        boxed && currentSize.box,
         className,
       )}
     >
-      {/* PeasyEdu Mascot */}
       <div
         className="relative shrink-0 flex items-center justify-center"
         style={{ width: currentSize.mascotWidth, height: currentSize.mascotHeight }}
@@ -72,18 +78,17 @@ export function LogoPeasyEdu({
         />
       </div>
 
-      {/* Brand copy: PeasyEdu + Slogan */}
-      <div className="flex flex-col leading-none">
-        <p className={cn("font-bold tracking-tight", currentSize.textSize)}>
+      <div className="flex flex-col items-start gap-[2px] min-w-0">
+        <p className={cn("font-brand font-bold tracking-normal whitespace-nowrap", currentSize.textSize)}>
           <span className={isDark ? "text-white" : "text-[#0a5464]"}>Peasy</span>
           <span className={isDark ? "text-[#77c5cf]" : "text-[#3c94a4]"}>Edu</span>
         </p>
         {showSlogan && (
           <p
             className={cn(
-              "font-semibold tracking-wider mt-0.5 uppercase",
+              "font-sans font-semibold whitespace-nowrap uppercase",
               currentSize.sloganSize,
-              isDark ? "text-[#77c5cf]" : "text-[#3c94a4]",
+              isDark ? "text-[#77c5cf]" : "text-[#116f7c]",
             )}
           >
             CÙNG CON TIẾN BỘ

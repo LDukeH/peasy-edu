@@ -7,10 +7,12 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?:
     | "default"
     | "secondary"
+    | "neutral"
     | "outline"
     | "destructive"
     | "success"
     | "warning"
+    | "info"
     | "accent";
 }
 
@@ -20,23 +22,21 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variants: Record<string, string> = {
-    default: "border-transparent bg-primary text-primary-foreground",
-    secondary:
-      "border-transparent bg-secondary text-secondary-foreground font-medium",
-    outline: "text-foreground border-border",
-    destructive:
-      "border-transparent bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200",
-    success:
-      "border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200",
-    warning:
-      "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200",
-    accent: "border-transparent bg-teal-100 text-teal-800 border border-teal-200",
+    default: "border-transparent bg-[#116f7c] text-white",
+    secondary: "border-transparent bg-[#eaf0f5] text-[#3d5266]",
+    neutral: "border-transparent bg-[#eaf0f5] text-[#3d5266]",
+    outline: "text-[#33465c] border-[#dce4eb] bg-white",
+    destructive: "border-transparent bg-[#fdeeee] text-[#9f2424]",
+    success: "border-transparent bg-[#ecfdf3] text-[#166534]",
+    warning: "border-transparent bg-[#fff7de] text-[#7a440a]",
+    info: "border-transparent bg-[#eaf7fa] text-[#155e75]",
+    accent: "border-[#77c5cf] bg-[#ddf2f4] text-[#116f7c]",
   };
 
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        "inline-flex items-center rounded-[6px] border px-[10px] py-[6px] text-xs font-semibold leading-[18px] whitespace-nowrap transition-colors",
         variants[variant],
         className,
       )}
@@ -46,14 +46,14 @@ export function Badge({
 }
 
 const statusTones: Record<TrangThaiTaiKhoan, string> = {
-  HOAT_DONG: "bg-brand-soft text-brand",
-  BI_KHOA: "bg-danger-soft text-danger",
+  HOAT_DONG: "bg-[#ecfdf3] text-[#166534]",
+  BI_KHOA: "bg-[#fdeeee] text-[#9f2424]",
 };
 
 export function StatusBadge({ status }: { status: TrangThaiTaiKhoan }) {
   return (
     <span
-      className={`inline-flex rounded-md px-2.5 py-1.5 text-xs font-semibold leading-[18px] whitespace-nowrap ${statusTones[status]}`}
+      className={`inline-flex rounded-[6px] px-[10px] py-[6px] text-xs font-semibold leading-[18px] whitespace-nowrap ${statusTones[status]}`}
     >
       {TRANG_THAI_TAI_KHOAN_LABEL[status]}
     </span>

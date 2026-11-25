@@ -16,7 +16,6 @@ export function PublicNavbar() {
   const { user, isLoading } = useAuthSession();
   const { signOut, isPending: signingOut } = useSignOut();
 
-  // Khớp chính xác danh sách links trên header Figma (node 2236:7205)
   const navLinks = [
     { label: "Dịch vụ & học phí", href: "/dich-vu-hoc-phi" },
     { label: "Đội ngũ gia sư", href: "/#doi-ngu-gia-su" },
@@ -24,15 +23,13 @@ export function PublicNavbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#dce4eb] bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand - Đồng bộ chính xác Figma Logo */}
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#dce4eb]/70">
+      <div className="mx-auto flex h-[88px] max-w-[1440px] items-center justify-between px-4 sm:px-8 lg:px-[80px]">
         <Link href="/" className="hover:opacity-95 transition-opacity">
-          <LogoPeasyEdu size="md" />
+          <LogoPeasyEdu size="md" boxed />
         </Link>
 
-        {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#52677d]">
+        <nav className="hidden md:flex items-center gap-[28px] text-sm font-normal leading-[22px] text-[#52677d]">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -50,56 +47,40 @@ export function PublicNavbar() {
           })}
         </nav>
 
-        {/* Account actions: Đăng nhập / Tài khoản & Tìm gia sư */}
         <div className="hidden md:flex items-center gap-3">
           {isLoading ? (
             <div
               aria-hidden="true"
-              className="h-10 w-28 animate-pulse rounded-lg bg-slate-100"
+              className="h-[44px] w-28 animate-pulse rounded-[8px] bg-[#eaf0f5]"
             />
           ) : user ? (
             <>
               <Link href={homeForRole(user.vaiTro)}>
-                <Button
-                  variant="outline"
-                  className="h-10 px-4 font-semibold text-[#33465c] border-[#dce4eb] hover:bg-slate-50 rounded-lg"
-                >
-                  {user.hoTen}
-                </Button>
+                <Button variant="secondary">{user.hoTen}</Button>
               </Link>
               <Button
                 variant="ghost"
                 disabled={signingOut}
                 onClick={signOut}
-                className="h-10 px-3 text-sm font-medium text-[#52677d] hover:text-[#116f7c]"
+                className="text-sm font-medium text-[#52677d] hover:text-[#116f7c]"
               >
                 {signingOut ? "Đang xuất…" : "Đăng xuất"}
               </Button>
             </>
           ) : (
             <Link href="/login">
-              <Button
-                variant="outline"
-                className="h-10 px-4 font-semibold text-[#33465c] border-[#dce4eb] hover:bg-slate-50 rounded-lg"
-              >
-                Đăng nhập
-              </Button>
+              <Button variant="secondary">Đăng nhập</Button>
             </Link>
           )}
           <Link href="/yeu-cau-tim-gia-su">
-            <Button
-              className="h-10 px-4 font-semibold text-white bg-[#116f7c] hover:bg-[#0e5c66] rounded-lg shadow-xs"
-            >
-              Tìm gia sư
-            </Button>
+            <Button variant="primary">Tìm gia sư</Button>
           </Link>
         </div>
 
-        {/* Mobile menu trigger */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-foreground focus:outline-none"
-          aria-label="Toggle Menu"
+          className="md:hidden p-2 text-[#172b4d] focus:outline-none"
+          aria-label="Mở menu"
         >
           {isMobileMenuOpen ? (
             <X className="h-6 w-6" />
@@ -109,30 +90,31 @@ export function PublicNavbar() {
         </button>
       </div>
 
-      {/* Mobile Nav dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-b border-[#dce4eb] bg-white px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-[#dce4eb] bg-white px-4 py-4 space-y-3">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
-                "block py-2 text-sm font-medium",
-                pathname === link.href ? "text-[#116f7c] font-bold" : "text-[#52677d]",
+                "block py-2 text-sm",
+                pathname === link.href
+                  ? "text-[#116f7c] font-semibold"
+                  : "text-[#52677d] font-normal",
               )}
             >
               {link.label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-[#dce4eb] flex flex-col gap-2">
+          <div className="pt-3 border-t border-[#dce4eb] flex flex-col gap-2">
             {user ? (
               <>
                 <Link
                   href={homeForRole(user.vaiTro)}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c]">
+                  <Button variant="secondary" className="w-full">
                     {user.hoTen}
                   </Button>
                 </Link>
@@ -150,13 +132,16 @@ export function PublicNavbar() {
               </>
             ) : (
               <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full border-[#dce4eb] text-[#33465c]">
+                <Button variant="secondary" className="w-full">
                   Đăng nhập
                 </Button>
               </Link>
             )}
-            <Link href="/yeu-cau-tim-gia-su" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button className="w-full bg-[#116f7c] hover:bg-[#0e5c66] text-white">
+            <Link
+              href="/yeu-cau-tim-gia-su"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Button variant="primary" className="w-full">
                 Tìm gia sư
               </Button>
             </Link>

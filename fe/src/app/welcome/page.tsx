@@ -32,8 +32,8 @@ export default function WelcomePage() {
 
   return (
     <main className="flex flex-1 items-center justify-center p-8">
-      <div className="flex w-full max-w-[520px] flex-col gap-5 rounded-xl border border-line bg-white p-8">
-        <Logo className="w-[200px] border border-line" />
+      <div className="flex w-full max-w-[520px] flex-col gap-5 rounded-[12px] border border-[#dce4eb] bg-white p-8">
+        <Logo />
         <h1 className="text-2xl font-semibold leading-10 text-ink">
           Xin chào, {user.hoTen}
         </h1>

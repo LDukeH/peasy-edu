@@ -22,29 +22,26 @@ export interface ButtonProps
 }
 
 const baseStyles =
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none";
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[8px] font-semibold leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-[#116f7c] focus-visible:outline-offset-2 disabled:pointer-events-none disabled:bg-[#e3e8f0] disabled:text-[#8594a8] disabled:border-transparent disabled:opacity-60 cursor-pointer select-none";
 
 const variants: Record<ButtonVariant, string> = {
-  default:
-    "bg-primary text-primary-foreground shadow hover:bg-primary/90 active:bg-primary/95",
-  primary: "bg-brand text-white hover:bg-brand-hover",
+  default: "bg-[#116f7c] text-white hover:bg-[#0e5f6a] active:bg-[#0c535d]",
+  primary: "bg-[#116f7c] text-white hover:bg-[#0e5f6a] active:bg-[#0c535d]",
   secondary:
-    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    "bg-white border border-[#dce4eb] text-[#33465c] hover:bg-[#f5f8fa]",
   outline:
-    "border border-border bg-background hover:bg-muted text-foreground",
-  ghost: "hover:bg-muted text-foreground",
-  destructive:
-    "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-  danger: "bg-danger text-white hover:opacity-90",
-  link: "text-primary underline-offset-4 hover:underline p-0 h-auto",
-  accent:
-    "bg-accent text-accent-foreground font-semibold hover:bg-accent/80",
+    "bg-white border border-[#dce4eb] text-[#33465c] hover:bg-[#f5f8fa]",
+  ghost: "bg-transparent text-[#33465c] hover:bg-[#eaf0f5]",
+  destructive: "bg-[#c93b3b] text-white hover:bg-[#b33232]",
+  danger: "bg-[#c93b3b] text-white hover:bg-[#b33232]",
+  link: "text-[#116f7c] underline-offset-4 hover:underline p-0 h-auto bg-transparent",
+  accent: "bg-[#77c5cf] text-[#172b4d] hover:bg-[#66b8c3]",
 };
 
 const sizes: Record<ButtonSize, string> = {
-  default: "h-10 px-4 py-2 text-sm",
-  sm: "h-8 rounded-md px-3 text-xs",
-  lg: "h-12 rounded-lg px-6 text-base font-semibold",
+  default: "h-[44px] px-4 py-3 text-sm",
+  sm: "h-9 rounded-[8px] px-3 text-xs",
+  lg: "h-12 rounded-[8px] px-6 text-base",
   icon: "h-10 w-10",
 };
 
@@ -57,7 +54,7 @@ export function buttonClasses(
     baseStyles,
     variants[variant],
     sizes[size],
-    disabled && "pointer-events-none opacity-50",
+    disabled && "pointer-events-none bg-[#e3e8f0] text-[#8594a8] border-transparent opacity-60",
   );
 }
 

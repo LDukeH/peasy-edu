@@ -88,6 +88,7 @@ export default function AccountsPage() {
   const stats = [
     ["Tổng tài khoản", total],
     ["Đang hoạt động", activeCount],
+    ["Chờ kích hoạt", 0],
     ["Bị khóa", lockedCount],
   ] as const;
 
@@ -95,10 +96,10 @@ export default function AccountsPage() {
     <>
       <PageHeading
         title="Tài khoản"
-        subtitle="Tạo và quản lý quyền truy cập theo vai trò trong hệ thống."
+        subtitle="Tạo và quản lý quyền truy cập theo vai trò, không thay đổi quyền nghiệp vụ khi chưa được duyệt."
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([label, value]) => (
           <div
             key={label}
@@ -263,8 +264,8 @@ export default function AccountsPage() {
       </section>
 
       <Notice title="Phân quyền tối thiểu theo công việc">
-        Quản lý thực hiện tạo tài khoản, gán vai trò và khóa/mở khóa truy cập
-        trực tiếp trên hệ thống.
+        Quản trị viên quản lý truy cập; không tự cấp quyền Chủ trung tâm, không
+        thay đổi khung giá hoặc tham số kinh doanh.
       </Notice>
 
       {dialog?.type === "create" && (
