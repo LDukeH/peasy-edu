@@ -25,6 +25,7 @@ import {
 
 const mockCreateSignedUploadUrl = vi.fn();
 const mockCreateSignedUrl = vi.fn();
+const mockUpdateBucket = vi.fn();
 const mockFrom = vi.fn(() => ({
   createSignedUploadUrl: mockCreateSignedUploadUrl,
   createSignedUrl: mockCreateSignedUrl,
@@ -32,7 +33,7 @@ const mockFrom = vi.fn(() => ({
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
-    storage: { from: mockFrom },
+    storage: { from: mockFrom, updateBucket: mockUpdateBucket },
   })),
 }));
 
@@ -106,6 +107,10 @@ describe('StorageService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUpdateBucket.mockResolvedValue({
+      data: { message: 'Successfully updated' },
+      error: null,
+    });
     vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
   });
@@ -130,10 +135,38 @@ describe('StorageService', () => {
         kichThuoc: 500_000,
       });
 
+      expect(mockUpdateBucket).toHaveBeenCalledTimes(1);
+      expect(mockUpdateBucket).toHaveBeenCalledWith('peasy-private', {
+        public: false,
+        fileSizeLimit: KICH_THUOC_TEP_TOI_DA,
+        allowedMimeTypes: [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'application/pdf',
+        ],
+      });
       expect(mockFrom).toHaveBeenCalledWith('peasy-private');
       expect(kq.path).toMatch(/^ung-tuyen\/[0-9a-f-]+\/cccd-mat-truoc\.jpg$/);
       expect(kq.uploadUrl).toContain(kq.path);
       expect(kq.token).toBe('tok-123');
+    });
+
+    it('không cấp upload URL nếu không áp đặt được giới hạn 15 MB ở bucket', async () => {
+      mockUpdateBucket.mockResolvedValue({
+        data: null,
+        error: { message: 'Bucket not found' },
+      });
+      const service = new StorageService(configDu, taoPrisma().prisma);
+
+      await expect(
+        service.createUploadUrl({
+          mucDich: MucDichUpload.CCCD_MAT_TRUOC,
+          loaiTep: 'image/jpeg',
+          kichThuoc: 1,
+        }),
+      ).rejects.toThrow(InternalServerErrorException);
+      expect(mockCreateSignedUploadUrl).not.toHaveBeenCalled();
     });
 
     it('cho phép PDF cho GIAY_TO_NANG_LUC nhưng từ chối PDF cho ANH_CHAN_DUNG', async () => {

@@ -14,6 +14,7 @@ import { VaiTro } from '../../common/enums/tai-khoan.enum.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import {
   type CreateUploadUrlDto,
+  KICH_THUOC_TEP_TOI_DA,
   MucDichUpload,
   type UploadUrlResponseDto,
 } from './dto/create-upload-url.dto.js';
@@ -53,6 +54,8 @@ export class StorageService {
   private readonly logger = new Logger(StorageService.name);
   private readonly supabase: SupabaseClient | null;
   private readonly bucket: string;
+  /** Đồng bộ giới hạn 15 MB & MIME lên bucket một lần mỗi tiến trình trước khi cấp URL upload. */
+  private dongBoBucket: Promise<void> | null = null;
 
   constructor(
     config: ConfigService,
@@ -92,9 +95,12 @@ export class StorageService {
       );
     }
 
+    const client = this.layClient();
+    await this.damBaoGioiHanBucket(client);
+
     const path = `ung-tuyen/${randomUUID()}/${TEN_TEP_THEO_MUC_DICH[dto.mucDich]}.${duoiTep}`;
-    const { data, error } = await this.layClient()
-      .storage.from(this.bucket)
+    const { data, error } = await client.storage
+      .from(this.bucket)
       .createSignedUploadUrl(path);
 
     if (error || !data) {
@@ -174,6 +180,35 @@ export class StorageService {
     if (!cacTepCuaMinh.has(path)) {
       throw new ForbiddenException('Bạn không có quyền xem tệp này');
     }
+  }
+
+  /**
+   * Ép giới hạn 15 MB, private và danh sách MIME ở tầng bucket Supabase để
+   * client không thể lách bằng cách gửi kichThuoc nhỏ rồi PUT tệp lớn hơn.
+   */
+  private damBaoGioiHanBucket(client: SupabaseClient): Promise<void> {
+    if (!this.dongBoBucket) {
+      this.dongBoBucket = client.storage
+        .updateBucket(this.bucket, {
+          public: false,
+          fileSizeLimit: KICH_THUOC_TEP_TOI_DA,
+          allowedMimeTypes: Object.keys(MIME_GIAY_TO),
+        })
+        .then(({ error }) => {
+          if (error) {
+            this.dongBoBucket = null;
+            this.logger.error('Không đồng bộ được giới hạn bucket Storage', error);
+            throw new InternalServerErrorException(
+              'Không cấu hình được giới hạn tải tệp trên Storage',
+            );
+          }
+        })
+        .catch((err) => {
+          this.dongBoBucket = null;
+          throw err;
+        });
+    }
+    return this.dongBoBucket;
   }
 
   private layClient(): SupabaseClient {
