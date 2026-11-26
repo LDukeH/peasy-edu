@@ -13,6 +13,7 @@ import { TutorsModule } from './modules/tutors/tutors.module.js';
 import { ParentsModule } from './modules/parents/parents.module.js';
 import { StudentsModule } from './modules/students/students.module.js';
 import { RequestsModule } from './modules/requests/requests.module.js';
+import { StorageModule } from './modules/storage/storage.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
@@ -27,6 +28,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     ParentsModule,
     StudentsModule,
     RequestsModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

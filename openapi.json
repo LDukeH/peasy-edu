@@ -3183,6 +3183,137 @@
           "Requests"
         ]
       }
+    },
+    "/api/storage/upload-url": {
+      "post": {
+        "description": "FE gửi loại tệp và dung lượng để nhận uploadUrl và path, PUT tệp trực tiếp lên Supabase Storage rồi gửi path vào POST /api/tutors/apply.",
+        "operationId": "storage_createUploadUrl",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUploadUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadUrlResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Định dạng tệp hoặc dung lượng không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Yêu cầu tạo URL tải tệp quá nhiều lần, vui lòng chờ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Xin Presigned Upload URL cho hồ sơ ứng tuyển (công khai)",
+        "tags": [
+          "Storage"
+        ]
+      }
+    },
+    "/api/storage/signed-url": {
+      "post": {
+        "description": "QUAN_LY và DIEU_PHOI xem được mọi tệp hồ sơ; GIA_SU chỉ xem được tệp thuộc hồ sơ của chính mình.",
+        "operationId": "storage_createSignedUrl",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignedUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Đường dẫn tệp không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Chưa đăng nhập hoặc phiên đã hết hạn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sai vai trò hoặc gia sư xem tệp không phải của mình",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy tệp trên Storage (vd. đường dẫn giả từ seed)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Cấp Signed URL tạm thời (5 phút) để xem tệp hồ sơ",
+        "tags": [
+          "Storage"
+        ]
+      }
     }
   },
   "info": {
@@ -6408,6 +6539,106 @@
         },
         "required": [
           "trangThai"
+        ]
+      },
+      "MucDichUpload": {
+        "type": "string",
+        "enum": [
+          "CCCD_MAT_TRUOC",
+          "CCCD_MAT_SAU",
+          "ANH_CHAN_DUNG",
+          "GIAY_TO_NANG_LUC"
+        ],
+        "description": "Loại tệp trong hồ sơ ứng tuyển"
+      },
+      "CreateUploadUrlDto": {
+        "type": "object",
+        "properties": {
+          "mucDich": {
+            "description": "Loại tệp trong hồ sơ ứng tuyển",
+            "example": "CCCD_MAT_TRUOC",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MucDichUpload"
+              }
+            ]
+          },
+          "loaiTep": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "MIME type của tệp. Ảnh nhận image/jpeg, image/png, image/webp; giấy tờ năng lực nhận thêm application/pdf",
+            "example": "image/jpeg"
+          },
+          "kichThuoc": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15728640,
+            "description": "Dung lượng tệp (byte), tối đa 15 MB",
+            "example": 350000
+          }
+        },
+        "required": [
+          "mucDich",
+          "loaiTep",
+          "kichThuoc"
+        ]
+      },
+      "UploadUrlResponseDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Đường dẫn tệp trên Storage — gửi giá trị này vào POST /api/tutors/apply",
+            "example": "ung-tuyen/550e8400-e29b-41d4-a716-446655440000/cccd-mat-truoc.jpg"
+          },
+          "uploadUrl": {
+            "type": "string",
+            "description": "Presigned URL để FE PUT tệp trực tiếp lên Supabase Storage",
+            "example": "https://project-ref.supabase.co/storage/v1/object/upload/sign/peasy-private/ung-tuyen/..."
+          },
+          "token": {
+            "type": "string",
+            "description": "Token đi kèm của Supabase (dùng nếu gọi uploadToSignedUrl)",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "path",
+          "uploadUrl",
+          "token"
+        ]
+      },
+      "CreateSignedUrlDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Đường dẫn tệp trên Storage lấy từ hồ sơ gia sư",
+            "example": "ung-tuyen/550e8400-e29b-41d4-a716-446655440000/cccd-mat-truoc.jpg"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "SignedUrlResponseDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Signed URL tạm thời để xem hoặc tải tệp từ bucket private",
+            "example": "https://project-ref.supabase.co/storage/v1/object/sign/peasy-private/ung-tuyen/..."
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Thời hạn hiệu lực của URL (giây)",
+            "example": 300
+          }
+        },
+        "required": [
+          "url",
+          "expiresIn"
         ]
       }
     }
