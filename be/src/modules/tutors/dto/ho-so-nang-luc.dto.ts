@@ -5,8 +5,10 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
 } from 'class-validator';
+import { NGAY_YYYY_MM_DD } from '../../../common/dto/ngay.js';
 import {
   LoaiHoSoNangLuc,
   TrangThaiHoSoNangLuc,
@@ -34,17 +36,26 @@ export class HoSoNangLucInputDto {
   @MaxLength(200)
   noiCap: string;
 
-  @ApiProperty({ type: String, format: 'date', example: '2022-07-15' })
+  @ApiProperty({
+    type: String,
+    format: 'date',
+    pattern: NGAY_YYYY_MM_DD.source,
+    example: '2022-07-15',
+  })
+  @Matches(NGAY_YYYY_MM_DD, { message: 'ngayCap phải có dạng YYYY-MM-DD' })
   @IsISO8601({ strict: true })
   ngayCap: string;
 
   @ApiPropertyOptional({
-    description: 'Ngày hết hạn (thẻ sinh viên, chứng chỉ ngoại ngữ…)',
+    description:
+      'Ngày hết hạn (thẻ sinh viên, chứng chỉ ngoại ngữ…); không trước ngày cấp',
     type: String,
     format: 'date',
+    pattern: NGAY_YYYY_MM_DD.source,
     example: '2026-07-15',
   })
   @IsOptional()
+  @Matches(NGAY_YYYY_MM_DD, { message: 'ngayHetHan phải có dạng YYYY-MM-DD' })
   @IsISO8601({ strict: true })
   ngayHetHan?: string;
 

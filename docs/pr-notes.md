@@ -33,9 +33,20 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
   - Lịch rảnh nhập theo `thu` (`1` = Thứ Hai … `7` = Chủ nhật) + giờ `HH:mm` (`gioBatDau`, `gioKetThuc`).
   - Mỗi giấy tờ năng lực (`hoSoNangLuc`) cần đủ 5 trường bắt buộc: `loai`, `ten`, `noiCap`, `ngayCap`, `tep` (`ngayHetHan` tùy chọn).
 - [ ] **Upload tệp khi ứng tuyển** *(từ PR #10)*: Ảnh CCCD (2 mặt), ảnh chân dung và giấy tờ phải tải lên qua API upload (`W2-NỀN`) trước rồi gửi đường dẫn vào form.
+- [ ] **Chạy lại `gen:api` và xử lý lỗi mới của `POST /api/tutors/apply`** *(từ PR #15)*:
+  - Ngày (`ngaySinh`, `ngayCap`, `ngayHetHan`) chỉ nhận `YYYY-MM-DD`; chọn `ONLINE` thì được gửi `khuVucNhanDay: []`.
+  - `400` mới: "Cần thẻ sinh viên còn hạn hoặc bằng tốt nghiệp", "Giáo viên cần khai báo đơn vị công tác (TT 29/2024)", "Giáo viên cần nộp bằng/chứng chỉ sư phạm hoặc xác nhận nơi công tác", "Lịch rảnh bị chồng giờ: …", "Ngày cấp giấy tờ không được sau hôm nay".
+  - `409` khi trùng CCCD / SĐT / email; `429` khi cùng SĐT gửi quá 5 lần trong 10 phút.
+- [ ] **Màn duyệt hồ sơ (NV điều phối)** *(từ PR #15)*: `GET /api/tutors?trangThai=CHO_DUYET` trả hồ sơ mới nộp trước. `POST /api/tutors/:id/review` trả `409` nếu hồ sơ không còn `CHO_DUYET` (NV khác vừa xử lý) → tải lại danh sách. Từ chối bắt buộc `lyDo`; lý do hiện ở `lyDoTuChoi` của chi tiết hồ sơ.
 
 #### `W2-FE2` — Không gian Gia sư: Hồ sơ & Lịch rảnh *(Nam)*
 - [ ] **Đổi hình thức dạy sang `ONLINE` (`PATCH /api/tutors/:id`)** *(review PR #10)*: Không gửi `khuVucNhanDay: []` vì DTO hiện có `@ArrayMinSize(1)` sẽ trả `400` (nên bỏ qua trường này khi đổi sang `ONLINE`, trừ khi BE mở lại rule).
+  - Cập nhật từ PR #15: BE đã cho phép `khuVucNhanDay: []` (bỏ `minItems`); `TAI_NHA`/`CA_HAI` mà hết khu vực sau cập nhật vẫn trả `400`. Chạy lại `gen:api` sau khi PR merge.
+- [ ] **Quyền tự sửa, `null` và tài khoản ngân hàng** *(từ PR #15)*:
+  - Gia sư `BI_TU_CHOI` / `NGUNG_HOP_TAC` tự sửa hồ sơ, môn dạy hoặc lịch rảnh → `409` (nên ẩn nút sửa); `CHO_DUYET` / `DANG_HOAT_DONG` / `TAM_NGUNG` sửa được.
+  - `PATCH /api/tutors/:id`: gửi `null` vào trường bắt buộc → `400`; trường tùy chọn (`donViCongTac`, `laGiaoVienCongLap`, `thuLaoMongMuon`, `gioiThieu`, `kinhNghiem`) gửi `null` để xóa.
+  - `taiKhoanNganHang` luôn trả số đã che (`******6789`); muốn đổi thì gửi đủ `nganHang`, `soTaiKhoan`, `chuTaiKhoan`.
+  - `PUT /subjects`, `PUT /availability` thay toàn bộ danh sách; lịch rảnh trả về đã sắp theo `thu` rồi `gioBatDau`.
 
 ---
 
@@ -56,15 +67,21 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
 
 
 #### `W2-BE1` — Logic Hồ sơ Gia sư, Môn dạy, Lịch rảnh & Duyệt *(Đức)*
-- [ ] **Khóa mã hóa CCCD & STK ngân hàng** *(từ PR #10)*: Schema lưu `cccdMaHoa`, `cccdHmac`, `taiKhoanNganHangMaHoa` → bổ sung biến môi trường khóa mã hóa vào `be/.env.example` và báo Duy cấu hình trên Render.
-- [ ] **Nguồn lưu `lyDoTuChoi`** *(review PR #10)*: `TutorDetailDto` có `lyDoTuChoi: string | null`, nhưng bảng `GiaSu` trong `be/prisma/schema.prisma` chưa có cột này → chốt đọc từ `NhatKyThayDoi` hay thêm cột `lyDoTuChoi String?` ở migration Tuần 2.
-- [ ] **Mapping tên trường & sinh mã nội bộ** *(review PR #10)*:
+- [x] **Khóa mã hóa CCCD & STK ngân hàng** *(từ PR #10)*: Schema lưu `cccdMaHoa`, `cccdHmac`, `taiKhoanNganHangMaHoa` → bổ sung biến môi trường khóa mã hóa vào `be/.env.example` và báo Duy cấu hình trên Render.
+  - Xử lý ở PR #15: `DATA_ENCRYPTION_KEY` (AES-256-GCM) và `DATA_HMAC_KEY` (HMAC-SHA256 cho `cccdHmac`), mỗi khóa base64 32 byte, hai khóa khác nhau. DB dùng chung → cả nhóm và Render (nếu cùng DB) dùng **cùng một cặp khóa**.
+- [x] **Nguồn lưu `lyDoTuChoi`** *(review PR #10)*: `TutorDetailDto` có `lyDoTuChoi: string | null`, nhưng bảng `GiaSu` trong `be/prisma/schema.prisma` chưa có cột này → chốt đọc từ `NhatKyThayDoi` hay thêm cột `lyDoTuChoi String?` ở migration Tuần 2.
+  - Chốt 23/11: đọc `lyDo` của bản ghi `NhatKyThayDoi` mới nhất (`loaiDoiTuong = 'GiaSu'`, `hanhDong = 'TU_CHOI'`), không thêm cột/migration.
+- [x] **Mapping tên trường & sinh mã nội bộ** *(review PR #10)*:
   - Map `MonDayInputDto.capHoc` ↔ cột `MonDay.capLop` trong Prisma.
   - `ngayUngTuyen` map từ `GiaSu.thoiDiemGhiNhanDongY` → nhớ điền khi seed ~15 gia sư và fallback sort `id desc` nếu `null`.
   - Các bảng `MonDay`, `LichRanh`, `HoSoNangLuc` đều có cột `ma String @unique` (không xuất ra DTO) → tự sinh mã duy nhất khi insert DB.
-- [ ] **Chốt trạng thái được phép sửa ở `PATCH /api/tutors/:id`** *(review PR #10)*: Xác định rõ gia sư ở trạng thái `NGUNG_HOP_TAC` / `BI_TU_CHOI` / `CHO_DUYET` có được sửa hồ sơ không.
-- [ ] **Edge case `khuVucNhanDay: []` khi đổi sang `ONLINE`** *(review PR #10)*: `UpdateTutorDto` kế thừa `@ArrayMinSize(1)` từ `ApplyTutorDto` nên gửi `khuVucNhanDay: []` khi đổi sang `ONLINE` sẽ bị `400` → điều chỉnh điều kiện `@ValidateIf` nếu muốn cho phép xóa mảng, hoặc thống nhất với FE không gửi trường này.
-- [ ] **Siết validate `format: 'date'`** *(review PR #10)*: `@IsISO8601({ strict: true })` cho `ngaySinh`, `ngayCap`, `ngayHetHan` đang nhận cả chuỗi có giờ (`2000-08-15T10:00:00Z`) → cân nhắc thêm `@Matches(/^\d{4}-\d{2}-\d{2}$/)` để khớp chặt chuẩn `date`.
+  - Xử lý ở PR #15: mã con sinh từ mã GS (`GS00016-MH01`, `GS00016-LR1-1800-2100`, `GS00016-HS01`); danh sách sort `thoiDiemGhiNhanDongY desc nulls last, id desc`; seed điền đủ ngày nộp.
+- [x] **Chốt trạng thái được phép sửa ở `PATCH /api/tutors/:id`** *(review PR #10)*: Xác định rõ gia sư ở trạng thái `NGUNG_HOP_TAC` / `BI_TU_CHOI` / `CHO_DUYET` có được sửa hồ sơ không.
+  - Chốt 23/11: `GIA_SU` tự sửa khi `CHO_DUYET` / `DANG_HOAT_DONG` / `TAM_NGUNG`; `BI_TU_CHOI`, `NGUNG_HOP_TAC` → `409`; `DIEU_PHOI` sửa mọi trạng thái. Áp dụng cả `PUT /subjects` và `PUT /availability`.
+- [x] **Edge case `khuVucNhanDay: []` khi đổi sang `ONLINE`** *(review PR #10)*: `UpdateTutorDto` kế thừa `@ArrayMinSize(1)` từ `ApplyTutorDto` nên gửi `khuVucNhanDay: []` khi đổi sang `ONLINE` sẽ bị `400` → điều chỉnh điều kiện `@ValidateIf` nếu muốn cho phép xóa mảng, hoặc thống nhất với FE không gửi trường này.
+  - Xử lý ở PR #15: cả Apply và Update nhận `[]`; server kiểm tra `TAI_NHA`/`CA_HAI` còn ≥ 1 khu vực trên dữ liệu sau khi gộp.
+- [x] **Siết validate `format: 'date'`** *(review PR #10)*: `@IsISO8601({ strict: true })` cho `ngaySinh`, `ngayCap`, `ngayHetHan` đang nhận cả chuỗi có giờ (`2000-08-15T10:00:00Z`) → cân nhắc thêm `@Matches(/^\d{4}-\d{2}-\d{2}$/)` để khớp chặt chuẩn `date`.
+  - Xử lý ở PR #15: thêm `@Matches` + `pattern` trong OpenAPI → FE chạy lại `gen:api`.
 
 ---
 
@@ -76,6 +93,10 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
   - Cấp **Signed URL** khi xem ảnh CCCD / giấy tờ năng lực.
 - [ ] **Lưu ý `JsonOnlyMiddleware`** *(review PR #10)*: `AppModule` đang áp dụng `JsonOnlyMiddleware` cho mọi route (`{*duongDan}`). Nếu `/storage/upload` dùng `multipart/form-data`, cần exclude route này (hoặc dùng luồng xin Presigned Upload URL bằng JSON).
 - [ ] **Biến môi trường mã hóa trên Render** *(từ PR #10)*: Thêm khóa mã hóa cho CCCD/STK của `W2-BE1` lên Staging & Production sau khi Đức chốt tên biến trong `be/.env.example`.
+- [ ] **Cặp khóa mã hóa dùng chung và chạy seed gia sư** *(từ PR #15)*:
+  - Tên biến: `DATA_ENCRYPTION_KEY`, `DATA_HMAC_KEY` (mỗi khóa base64 32 byte, hai khóa khác nhau; lệnh tạo ghi trong `be/.env.example`).
+  - DB Supabase dùng chung → tạo **một cặp**, gửi riêng cho cả nhóm (không commit) và đặt cùng cặp đó trên Render nếu Render trỏ cùng DB. Dữ liệu mã hóa bằng khóa khác sẽ không giải mã được; thiếu khóa thì đăng nhập vẫn chạy, API hồ sơ gia sư trả `500`.
+  - Có khóa rồi mới chạy `npm run db:seed` (cần cả `SEED_MAT_KHAU_MAU`) → 15 gia sư mẫu, SĐT `0911000001`–`0911000015`. Ảnh seed (`seed/gia-su/GSxxxxx/*.jpg`) chỉ là đường dẫn giả, chưa có tệp trên Storage.
 
 ---
 
@@ -100,6 +121,7 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
 | PR | Mã task | Nhánh | Tác giả | Ngày tạo |
 | :---: | :---: | :--- | :--- | :---: |
 | [#10](https://github.com/LDukeH/peasy-edu/pull/10) | `W2-C1` | `contract/w2-tutors` | Đức (`broccoli2609`) | 2026-11-22 |
+| [#15](https://github.com/LDukeH/peasy-edu/pull/15) | `W2-BE1` | `feat/w2-be-tutors` | Đức (`broccoli2609`) | 2026-11-26 |
 
 ---
 

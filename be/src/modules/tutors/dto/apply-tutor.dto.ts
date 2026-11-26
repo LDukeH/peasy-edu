@@ -19,9 +19,14 @@ import {
   MaxLength,
   Min,
   MinLength,
+  Validate,
   ValidateIf,
   ValidateNested,
+  type ValidationArguments,
+  ValidatorConstraint,
+  type ValidatorConstraintInterface,
 } from 'class-validator';
+import { NGAY_YYYY_MM_DD } from '../../../common/dto/ngay.js';
 import {
   GioiTinh,
   HinhThucDay,
@@ -33,6 +38,22 @@ import { MonDayInputDto } from './mon-day.dto.js';
 
 /** Đường dẫn tệp do API upload (W2-NỀN) trả về. */
 const MO_TA_TEP = 'Đường dẫn tệp trong Storage, lấy từ API upload (W2-NỀN)';
+
+/** Dạy tại nhà (TAI_NHA, CA_HAI) cần ít nhất 1 khu vực; ONLINE được gửi []. */
+@ValidatorConstraint({ name: 'khuVucTheoHinhThucDay' })
+class KhuVucTheoHinhThucDay implements ValidatorConstraintInterface {
+  validate(khuVuc: unknown, args: ValidationArguments): boolean {
+    const { hinhThucDay } = args.object as { hinhThucDay?: unknown };
+    return (
+      hinhThucDay === HinhThucDay.ONLINE ||
+      (Array.isArray(khuVuc) && khuVuc.length > 0)
+    );
+  }
+
+  defaultMessage(): string {
+    return 'Cần ít nhất 1 khu vực nhận dạy khi dạy tại nhà (TAI_NHA hoặc CA_HAI)';
+  }
+}
 
 /**
  * Biểu mẫu ứng tuyển công khai (Mục 4.2.3–4.2.5, 6.2). Hồ sơ vào trạng thái
@@ -46,7 +67,13 @@ export class ApplyTutorDto {
   @MaxLength(100)
   hoTen: string;
 
-  @ApiProperty({ type: String, format: 'date', example: '2000-08-15' })
+  @ApiProperty({
+    type: String,
+    format: 'date',
+    pattern: NGAY_YYYY_MM_DD.source,
+    example: '2000-08-15',
+  })
+  @Matches(NGAY_YYYY_MM_DD, { message: 'ngaySinh phải có dạng YYYY-MM-DD' })
   @IsISO8601({ strict: true })
   ngaySinh: string;
 
@@ -169,7 +196,7 @@ export class ApplyTutorDto {
 
   @ApiPropertyOptional({
     description:
-      'Khu vực nhận dạy (nhóm phường/xã). Bắt buộc ít nhất 1 khi hinhThucDay là TAI_NHA hoặc CA_HAI',
+      'Khu vực nhận dạy (nhóm phường/xã). Bắt buộc ít nhất 1 khi hinhThucDay là TAI_NHA hoặc CA_HAI; ONLINE được bỏ trống hoặc gửi []',
     type: [String],
     example: ['Bình Thạnh', 'Phú Nhuận'],
   })
@@ -178,7 +205,7 @@ export class ApplyTutorDto {
       o.hinhThucDay !== HinhThucDay.ONLINE || o.khuVucNhanDay !== undefined,
   )
   @IsArray()
-  @ArrayMinSize(1)
+  @Validate(KhuVucTheoHinhThucDay)
   @ArrayMaxSize(20)
   @ArrayUnique()
   @IsString({ each: true })

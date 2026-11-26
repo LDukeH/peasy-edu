@@ -4,13 +4,13 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -25,6 +25,7 @@ import {
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { AuthUser } from '../../common/auth/auth-user.js';
 import {
   CuaMinh,
@@ -45,8 +46,12 @@ import { ReviewTutorDto } from './dto/review-tutor.dto.js';
 import { TutorListResponseDto } from './dto/tutor-list-response.dto.js';
 import { TutorDetailDto } from './dto/tutor.dto.js';
 import { UpdateTutorDto } from './dto/update-tutor.dto.js';
-
-const CHUA_CAI_DAT = 'Chưa cài đặt – logic thuộc task W2-BE1';
+import {
+  TutorApplyThrottlerGuard,
+  UNG_TUYEN_KHOANG_THOI_GIAN_MS,
+  UNG_TUYEN_SO_LAN_TOI_DA,
+} from './tutor-apply-throttler.guard.js';
+import { TutorsService } from './tutors.service.js';
 
 const CHUA_DANG_NHAP = {
   type: ErrorResponseDto,
@@ -65,8 +70,17 @@ const KHONG_TIM_THAY = {
 @ApiTags('Tutors')
 @Controller('tutors')
 export class TutorsController {
+  constructor(private readonly tutors: TutorsService) {}
+
   @Post('apply')
   @Public()
+  @UseGuards(TutorApplyThrottlerGuard)
+  @Throttle({
+    default: {
+      limit: UNG_TUYEN_SO_LAN_TOI_DA,
+      ttl: UNG_TUYEN_KHOANG_THOI_GIAN_MS,
+    },
+  })
   @ApiOperation({
     summary: 'Ứng tuyển làm gia sư (công khai)',
     description:
@@ -87,8 +101,8 @@ export class TutorsController {
     type: ErrorResponseDto,
     description: 'Gửi hồ sơ quá nhiều lần, vui lòng chờ',
   })
-  apply(@Body() _dto: ApplyTutorDto): ApplyTutorResultDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  apply(@Body() dto: ApplyTutorDto): Promise<ApplyTutorResultDto> {
+    return this.tutors.apply(dto);
   }
 
   @Get()
@@ -109,8 +123,8 @@ export class TutorsController {
     type: ErrorResponseDto,
     description: 'Không phải vai trò QUAN_LY hoặc DIEU_PHOI',
   })
-  findAll(@Query() _query: ListTutorsQueryDto): TutorListResponseDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findAll(@Query() query: ListTutorsQueryDto): Promise<TutorListResponseDto> {
+    return this.tutors.findAll(query);
   }
 
   // Khai báo trước ':id' để "me" không bị ParseIntPipe bắt.
@@ -132,8 +146,8 @@ export class TutorsController {
     type: ErrorResponseDto,
     description: 'Tài khoản chưa liên kết hồ sơ gia sư',
   })
-  findMe(@CurrentUser() _user: AuthUser): TutorDetailDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findMe(@CurrentUser() user: AuthUser): Promise<TutorDetailDto> {
+    return this.tutors.findMe(user);
   }
 
   @Get(':id')
@@ -152,8 +166,8 @@ export class TutorsController {
     description: 'Sai vai trò, hoặc gia sư xem hồ sơ không phải của mình',
   })
   @ApiNotFoundResponse(KHONG_TIM_THAY)
-  findOne(@Param('id', ParseIntPipe) _id: number): TutorDetailDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<TutorDetailDto> {
+    return this.tutors.findOne(id);
   }
 
   @Patch(':id')
@@ -182,11 +196,11 @@ export class TutorsController {
     description: 'Số điện thoại hoặc email đã được sử dụng',
   })
   update(
-    @Param('id', ParseIntPipe) _id: number,
-    @Body() _dto: UpdateTutorDto,
-    @CurrentUser() _user: AuthUser,
-  ): TutorDetailDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTutorDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<TutorDetailDto> {
+    return this.tutors.update(id, dto, user);
   }
 
   @Put(':id/subjects')
@@ -211,10 +225,11 @@ export class TutorsController {
   })
   @ApiNotFoundResponse(KHONG_TIM_THAY)
   replaceSubjects(
-    @Param('id', ParseIntPipe) _id: number,
-    @Body() _dto: ReplaceTutorSubjectsDto,
-  ): MonDayDto[] {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ReplaceTutorSubjectsDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<MonDayDto[]> {
+    return this.tutors.replaceSubjects(id, dto, user);
   }
 
   @Put(':id/availability')
@@ -239,10 +254,11 @@ export class TutorsController {
   })
   @ApiNotFoundResponse(KHONG_TIM_THAY)
   replaceAvailability(
-    @Param('id', ParseIntPipe) _id: number,
-    @Body() _dto: ReplaceTutorAvailabilityDto,
-  ): LichRanhDto[] {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ReplaceTutorAvailabilityDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<LichRanhDto[]> {
+    return this.tutors.replaceAvailability(id, dto, user);
   }
 
   @Post(':id/review')
@@ -270,10 +286,10 @@ export class TutorsController {
     description: 'Hồ sơ không ở trạng thái CHO_DUYET',
   })
   review(
-    @Param('id', ParseIntPipe) _id: number,
-    @Body() _dto: ReviewTutorDto,
-    @CurrentUser() _user: AuthUser,
-  ): TutorDetailDto {
-    throw new NotImplementedException(CHUA_CAI_DAT);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ReviewTutorDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<TutorDetailDto> {
+    return this.tutors.review(id, dto, user);
   }
 }
