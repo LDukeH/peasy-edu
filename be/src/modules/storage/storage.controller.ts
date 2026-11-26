@@ -17,7 +17,7 @@ import {
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import type { AuthUser } from '../../common/auth/auth-user.js';
 import {
   CurrentUser,
@@ -34,11 +34,12 @@ import {
   CreateSignedUrlDto,
   SignedUrlResponseDto,
 } from './dto/signed-url.dto.js';
+import {
+  StorageUploadThrottlerGuard,
+  UPLOAD_URL_KHOANG_THOI_GIAN_MS,
+  UPLOAD_URL_SO_LAN_TOI_DA,
+} from './storage-upload-throttler.guard.js';
 import { StorageService } from './storage.service.js';
-
-/** 20 lần xin URL upload / 10 phút cho khách ứng tuyển. */
-const UPLOAD_URL_SO_LAN_TOI_DA = 20;
-const UPLOAD_URL_KHOANG_THOI_GIAN_MS = 10 * 60_000;
 
 @ApiTags('Storage')
 @Controller('storage')
@@ -47,7 +48,7 @@ export class StorageController {
 
   @Post('upload-url')
   @Public()
-  @UseGuards(ThrottlerGuard)
+  @UseGuards(StorageUploadThrottlerGuard)
   @Throttle({
     default: {
       limit: UPLOAD_URL_SO_LAN_TOI_DA,

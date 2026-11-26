@@ -18,6 +18,7 @@ import {
   MucDichUpload,
 } from './dto/create-upload-url.dto.js';
 import { CreateSignedUrlDto } from './dto/signed-url.dto.js';
+import { StorageUploadThrottlerGuard } from './storage-upload-throttler.guard.js';
 import {
   StorageService,
   THOI_HAN_SIGNED_URL_GIAY,
@@ -270,7 +271,7 @@ describe('StorageService', () => {
     it('trả 404 khi tệp không tồn tại trên Storage (vd. đường dẫn giả từ seed)', async () => {
       mockCreateSignedUrl.mockResolvedValue({
         data: null,
-        error: { message: 'Object not found' },
+        error: { message: 'Object not found', statusCode: '404' },
       });
       const service = new StorageService(configDu, taoPrisma().prisma);
 
@@ -281,5 +282,47 @@ describe('StorageService', () => {
         ),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('không biến lỗi khác có chữ "object" thành 404 mà trả 500', async () => {
+      mockCreateSignedUrl.mockResolvedValue({
+        data: null,
+        error: { message: 'Invalid object key signature', statusCode: '500' },
+      });
+      const service = new StorageService(configDu, taoPrisma().prisma);
+
+      await expect(
+        service.createSignedUrl(
+          { path: 'ung-tuyen/abc/cccd-mat-truoc.jpg' },
+          dieuPhoi,
+        ),
+      ).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+});
+
+describe('StorageUploadThrottlerGuard', () => {
+  it('đếm theo IP đầu tiên trong X-Forwarded-For và fallback req.ip', async () => {
+    const guard = Object.create(
+      StorageUploadThrottlerGuard.prototype,
+    ) as unknown as {
+      getTracker(req: {
+        headers: Record<string, string | string[] | undefined>;
+        ip?: string;
+      }): Promise<string>;
+    };
+
+    expect(
+      await guard.getTracker({
+        headers: { 'x-forwarded-for': '203.0.113.10, 76.76.21.21' },
+        ip: '76.76.21.21',
+      }),
+    ).toBe('storage-upload:203.0.113.10');
+
+    expect(
+      await guard.getTracker({
+        headers: {},
+        ip: '127.0.0.1',
+      }),
+    ).toBe('storage-upload:127.0.0.1');
   });
 });

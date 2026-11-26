@@ -140,8 +140,14 @@ export class StorageService {
       .createSignedUrl(path, THOI_HAN_SIGNED_URL_GIAY);
 
     if (error || !data) {
+      const maTrangThai = (error as { statusCode?: string | number } | null)
+        ?.statusCode;
       const thongDiep = error?.message?.toLowerCase() ?? '';
-      if (thongDiep.includes('not found') || thongDiep.includes('object')) {
+      if (
+        maTrangThai === '404' ||
+        maTrangThai === 404 ||
+        thongDiep.includes('not found')
+      ) {
         throw new NotFoundException('Không tìm thấy tệp trên Storage');
       }
       this.logger.error('Không tạo được Signed URL', error);
@@ -185,6 +191,8 @@ export class StorageService {
   /**
    * Ép giới hạn 15 MB, private và danh sách MIME ở tầng bucket Supabase để
    * client không thể lách bằng cách gửi kichThuoc nhỏ rồi PUT tệp lớn hơn.
+   * Lưu ý MVP: bucket cho phép hợp của cả 4 MIME (jpeg/png/webp/pdf), nên
+   * phân biệt MIME riêng theo từng mucDich chỉ kiểm ở bước khai báo.
    */
   private damBaoGioiHanBucket(client: SupabaseClient): Promise<void> {
     if (!this.dongBoBucket) {
