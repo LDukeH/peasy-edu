@@ -33,6 +33,8 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
   - Lịch rảnh nhập theo `thu` (`1` = Thứ Hai … `7` = Chủ nhật) + giờ `HH:mm` (`gioBatDau`, `gioKetThuc`).
   - Mỗi giấy tờ năng lực (`hoSoNangLuc`) cần đủ 5 trường bắt buộc: `loai`, `ten`, `noiCap`, `ngayCap`, `tep` (`ngayHetHan` tùy chọn).
 - [ ] **Upload tệp khi ứng tuyển** *(từ PR #10)*: Ảnh CCCD (2 mặt), ảnh chân dung và giấy tờ phải tải lên qua API upload (`W2-NỀN`) trước rồi gửi đường dẫn vào form.
+  - Cập nhật từ `W2-NỀN` (`feat/w2-nen-storage`): chạy lại `npm run gen:api`. Dùng luồng Presigned Upload URL: gọi `POST /api/storage/upload-url` (`mucDich`, `loaiTep`, `kichThuoc` ≤ 15 MB; ảnh nhận `image/jpeg|png|webp`, `GIAY_TO_NANG_LUC` nhận thêm `application/pdf`) → `PUT` tệp trực tiếp lên `uploadUrl` với header `Content-Type` → gửi `path` vào `POST /api/tutors/apply`.
+  - Xem ảnh CCCD / giấy tờ: gọi `POST /api/storage/signed-url` (`{ path }`) lấy `url` tạm 5 phút; nếu trả `404` (ảnh giả của dữ liệu seed) thì hiển thị placeholder.
 - [ ] **Chạy lại `gen:api` và xử lý lỗi mới của `POST /api/tutors/apply`** *(từ PR #15)*:
   - Ngày (`ngaySinh`, `ngayCap`, `ngayHetHan`) chỉ nhận `YYYY-MM-DD`; chọn `ONLINE` thì được gửi `khuVucNhanDay: []`.
   - `400` mới: "Cần thẻ sinh viên còn hạn hoặc bằng tốt nghiệp", "Giáo viên cần khai báo đơn vị công tác (TT 29/2024)", "Giáo viên cần nộp bằng/chứng chỉ sư phạm hoặc xác nhận nơi công tác", "Lịch rảnh bị chồng giờ: …", "Ngày cấp giấy tờ không được sau hôm nay".
@@ -88,10 +90,12 @@ Tài liệu tập trung các **lưu ý giao cắt giữa các thành viên** đ�
 ### 🧱 Hạ tầng / Nền
 
 #### `W2-NỀN` — Upload file (Supabase Storage) & Môi trường *(Duy)*
-- [ ] **Luồng upload tệp cho ứng tuyển** *(từ PR #10)*:
+- [x] **Luồng upload tệp cho ứng tuyển** *(từ PR #10)*:
   - Hỗ trợ khách chưa đăng nhập tải ảnh CCCD, chân dung, giấy tờ khi ứng tuyển và trả về đường dẫn lưu Storage.
   - Cấp **Signed URL** khi xem ảnh CCCD / giấy tờ năng lực.
-- [ ] **Lưu ý `JsonOnlyMiddleware`** *(review PR #10)*: `AppModule` đang áp dụng `JsonOnlyMiddleware` cho mọi route (`{*duongDan}`). Nếu `/storage/upload` dùng `multipart/form-data`, cần exclude route này (hoặc dùng luồng xin Presigned Upload URL bằng JSON).
+  - Xử lý ở nhánh `feat/w2-nen-storage`: `POST /api/storage/upload-url` (công khai, giới hạn 15 MB, rate limit 20 lần/10 phút) và `POST /api/storage/signed-url` (`QUAN_LY`/`DIEU_PHOI` xem tất cả, `GIA_SU` chỉ xem tệp của mình, path seed không có trên Storage trả `404`). Cấu hình qua `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_STORAGE_BUCKET`.
+- [x] **Lưu ý `JsonOnlyMiddleware`** *(review PR #10)*: `AppModule` đang áp dụng `JsonOnlyMiddleware` cho mọi route (`{*duongDan}`). Nếu `/storage/upload` dùng `multipart/form-data`, cần exclude route này (hoặc dùng luồng xin Presigned Upload URL bằng JSON).
+  - Xử lý ở nhánh `feat/w2-nen-storage`: dùng luồng Presigned Upload URL bằng JSON nên giữ nguyên `JsonOnlyMiddleware` cho toàn bộ API.
 - [ ] **Biến môi trường mã hóa trên Render** *(từ PR #10)*: Thêm khóa mã hóa cho CCCD/STK của `W2-BE1` lên Staging & Production sau khi Đức chốt tên biến trong `be/.env.example`.
 - [ ] **Cặp khóa mã hóa dùng chung và chạy seed gia sư** *(từ PR #15)*:
   - Tên biến: `DATA_ENCRYPTION_KEY`, `DATA_HMAC_KEY` (mỗi khóa base64 32 byte, hai khóa khác nhau; lệnh tạo ghi trong `be/.env.example`).
